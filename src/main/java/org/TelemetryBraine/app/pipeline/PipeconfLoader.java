@@ -48,11 +48,6 @@ import static org.onosproject.net.pi.model.PiPipeconf.ExtensionType.P4_INFO_TEXT
 public final class PipeconfLoader {
 
     private static final String APP_NAME = "org.TelemetryBraine.app.pipeline";
-    /*private static final PiPipeconfId BASIC_PIPECONF_ID = new PiPipeconfId("org.onosproject.pipelines.basic");
-    private static final String BASIC_JSON_PATH = "/p4c-out/bmv2/basic.json";
-    private static final String BASIC_P4INFO = "/p4c-out/bmv2/basic_p4info.txt";
-
-    public static final PiPipeconf BASIC_PIPECONF = buildBasicPipeconf();*/
 
     private static final PiPipeconfId INT_PIPECONF_ID = new PiPipeconfId("org.TelemetryBraine.app.pipeline");
     private static final String INT_JSON_PATH = "/p4c-out/bmv2/int.json";
@@ -60,7 +55,6 @@ public final class PipeconfLoader {
 
     public static final PiPipeconf INT_PIPECONF = buildIntPipeconf();
 
-    //private static final Collection<PiPipeconf> ALL_PIPECONFS = ImmutableList.of(BASIC_PIPECONF, INT_PIPECONF);
     private static final Collection<PiPipeconf> ALL_PIPECONFS = ImmutableList.of(INT_PIPECONF);
 
     @Reference(cardinality = ReferenceCardinality.MANDATORY)

@@ -13,19 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.TelemetryBraine.app;
 
-package org.TelemetryBraine.app.rest;
-
-import org.onlab.rest.AbstractWebApplication;
-
-import java.util.Set;
+import org.TelemetryBraine.app.impl.SimpleIntManager;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- * Sample REST API web application.
+ * Set of tests of the ONOS application component.
  */
-public class AppWebApplication extends AbstractWebApplication {
-    @Override
-    public Set<Class<?>> getClasses() {
-        return getClasses(AppWebResource.class);
+public class SimpleIntManagerTest {
+
+    private SimpleIntManager component;
+
+    @Before
+    public void setUp() {
+
     }
+
+    @After
+    public void tearDown() {
+    }
+
+    @Test
+    public void basics() {
+
+    }
+
 }

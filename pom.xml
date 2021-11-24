@@ -31,15 +31,15 @@
     <url>http://onosproject.org</url>
 
     <properties>
-        <onos.app.name>org.foo.app</onos.app.name>
+        <onos.app.name>org.TelemetryBraine.app</onos.app.name>
         <api.version>1.0.0</api.version>
-        <api.description>Sample application REST API</api.description>
-        <onos.app.title>Foo App</onos.app.title>
-        <onos.app.origin>Foo, Inc.</onos.app.origin>
+        <api.description>Telemetry-Braine REST API</api.description>
+        <onos.app.title>Telemetry-Braine</onos.app.title>
+        <onos.app.origin>SSSA</onos.app.origin>
         <onos.app.category>default</onos.app.category>
         <api.package>org.TelemetryBraine.app</api.package>
         <onos.app.url>http://onosproject.org</onos.app.url>
-        <api.title>Sample app REST API</api.title>
+        <api.title>TelemetryBraine REST API</api.title>
         <onos.app.readme>ONOS OSGi bundle archetype.</onos.app.readme>
         <web.context>/onos/TelemetryBraine-app</web.context>
     </properties>

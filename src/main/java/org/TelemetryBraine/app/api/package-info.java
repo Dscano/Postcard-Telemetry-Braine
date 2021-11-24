@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-present Open Networking Foundation
+ * Copyright 2015-present Open Networking Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,33 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.TelemetryBraine.app;
-
-import org.TelemetryBraine.app.impl.AppComponent;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.onosproject.cfg.ComponentConfigAdapter;
 
 /**
- * Set of tests of the ONOS application component.
+ * Service to control a network of devices capable of collecting and exporting
+ * data plane telemetry via in-band mechanism.
  */
-public class AppComponentTest {
-
-    private AppComponent component;
-
-    @Before
-    public void setUp() {
-
-    }
-
-    @After
-    public void tearDown() {
-    }
-
-    @Test
-    public void basics() {
-
-    }
-
-}
+package org.TelemetryBraine.app.api;
