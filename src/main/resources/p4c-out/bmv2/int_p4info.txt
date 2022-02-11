@@ -79,57 +79,9 @@ tables {
 }
 tables {
   preamble {
-    id: 33588181
-    name: "ingress.process_int_source_sink.tb_set_source"
-    alias: "tb_set_source"
-  }
-  match_fields {
-    id: 1
-    name: "standard_metadata.ingress_port"
-    bitwidth: 9
-    match_type: EXACT
-  }
-  action_refs {
-    id: 16801076
-  }
-  action_refs {
-    id: 16819938
-    annotations: "@defaultonly"
-    scope: DEFAULT_ONLY
-  }
-  const_default_action_id: 16819938
-  direct_resource_ids: 318807707
-  size: 511
-}
-tables {
-  preamble {
-    id: 33584966
-    name: "ingress.process_int_source_sink.tb_set_sink"
-    alias: "tb_set_sink"
-  }
-  match_fields {
-    id: 1
-    name: "standard_metadata.egress_spec"
-    bitwidth: 9
-    match_type: EXACT
-  }
-  action_refs {
-    id: 16814977
-  }
-  action_refs {
-    id: 16819938
-    annotations: "@defaultonly"
-    scope: DEFAULT_ONLY
-  }
-  const_default_action_id: 16819938
-  direct_resource_ids: 318828289
-  size: 511
-}
-tables {
-  preamble {
-    id: 33576412
-    name: "ingress.process_int_source.tb_int_source"
-    alias: "tb_int_source"
+    id: 33568353
+    name: "ingress.process_activate_postcard.tb_postcard_telemetry"
+    alias: "tb_postcard_telemetry"
   }
   match_fields {
     id: 1
@@ -156,7 +108,7 @@ tables {
     match_type: TERNARY
   }
   action_refs {
-    id: 16802666
+    id: 16830032
   }
   action_refs {
     id: 16819938
@@ -164,7 +116,7 @@ tables {
     scope: DEFAULT_ONLY
   }
   const_default_action_id: 16819938
-  direct_resource_ids: 318802143
+  direct_resource_ids: 318828254
   size: 1024
 }
 tables {
@@ -175,7 +127,7 @@ tables {
   }
   match_fields {
     id: 1
-    name: "int_is_valid"
+    name: "report_is_valid"
     bitwidth: 1
     match_type: EXACT
   }
@@ -192,18 +144,18 @@ tables {
 }
 tables {
   preamble {
-    id: 33565180
-    name: "egress.process_int_report.tb_generate_report"
+    id: 33597630
+    name: "egress.process_postcard_report.tb_generate_report"
     alias: "tb_generate_report"
   }
   match_fields {
     id: 1
-    name: "int_is_valid"
+    name: "report_is_valid"
     bitwidth: 1
     match_type: EXACT
   }
   action_refs {
-    id: 16790504
+    id: 16801464
   }
   action_refs {
     id: 16819938
@@ -259,50 +211,9 @@ actions {
 }
 actions {
   preamble {
-    id: 16801076
-    name: "ingress.process_int_source_sink.int_set_source"
-    alias: "int_set_source"
-  }
-}
-actions {
-  preamble {
-    id: 16814977
-    name: "ingress.process_int_source_sink.int_set_sink"
-    alias: "int_set_sink"
-  }
-}
-actions {
-  preamble {
-    id: 16802666
-    name: "ingress.process_int_source.int_source_dscp"
-    alias: "int_source_dscp"
-  }
-  params {
-    id: 1
-    name: "hop_metadata_len"
-    bitwidth: 5
-  }
-  params {
-    id: 2
-    name: "remaining_hop_cnt"
-    bitwidth: 8
-  }
-  params {
-    id: 3
-    name: "ins_mask0003"
-    bitwidth: 4
-  }
-  params {
-    id: 4
-    name: "ins_mask0407"
-    bitwidth: 4
-  }
-}
-actions {
-  preamble {
-    id: 16800567
-    name: "NoAction"
-    alias: "NoAction"
+    id: 16830032
+    name: "ingress.process_activate_postcard.activate_postcard"
+    alias: "activate_postcard"
   }
 }
 actions {
@@ -316,11 +227,16 @@ actions {
     name: "switch_id"
     bitwidth: 32
   }
+  params {
+    id: 2
+    name: "flow_id"
+    bitwidth: 32
+  }
 }
 actions {
   preamble {
-    id: 16790504
-    name: "egress.process_int_report.do_report_encapsulation"
+    id: 16801464
+    name: "egress.process_postcard_report.do_report_encapsulation"
     alias: "do_report_encapsulation"
   }
   params {
@@ -384,36 +300,14 @@ direct_counters {
 }
 direct_counters {
   preamble {
-    id: 318807707
-    name: "ingress.process_int_source_sink.counter_set_source"
-    alias: "counter_set_source"
-  }
-  spec {
-    unit: BOTH
-  }
-  direct_table_id: 33588181
-}
-direct_counters {
-  preamble {
-    id: 318828289
-    name: "ingress.process_int_source_sink.counter_set_sink"
-    alias: "counter_set_sink"
-  }
-  spec {
-    unit: BOTH
-  }
-  direct_table_id: 33584966
-}
-direct_counters {
-  preamble {
-    id: 318802143
-    name: "ingress.process_int_source.counter_int_source"
+    id: 318828254
+    name: "ingress.process_activate_postcard.counter_int_source"
     alias: "counter_int_source"
   }
   spec {
     unit: BOTH
   }
-  direct_table_id: 33576412
+  direct_table_id: 33568353
 }
 controller_packet_metadata {
   preamble {

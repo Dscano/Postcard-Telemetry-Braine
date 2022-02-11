@@ -102,6 +102,8 @@ public final class IntIntent {
     private final Set<IntReportType> reportTypes;
     // telemetry mode
     private final TelemetryMode telemetryMode;
+    // flow id
+    private final int flowId;
 
     /**
      * Creates an IntIntent.
@@ -111,15 +113,17 @@ public final class IntIntent {
      * @param headerType    the type of INT header
      * @param reportTypes   the types of report to be generated
      * @param telemetryMode the telemetry mode
+     * @param flowId        the flowId
      */
     private IntIntent(TrafficSelector selector, Set<IntMetadataType> metadataTypes,
                       IntHeaderType headerType, Set<IntReportType> reportTypes,
-                      TelemetryMode telemetryMode) {
+                      TelemetryMode telemetryMode, int flowId) {
         this.selector = selector;
         this.metadataTypes = new HashSet<>(metadataTypes);
         this.headerType = headerType;
         this.reportTypes = new HashSet<>(reportTypes);
         this.telemetryMode = telemetryMode;
+        this.flowId = flowId;
     }
 
     /**
@@ -168,6 +172,13 @@ public final class IntIntent {
     }
 
     /**
+     * Returns a flow-id specified in this postcard telemetry.
+     *
+     * @return flowId
+     */
+    public int flowId() { return flowId; }
+
+    /**
      * Returns a new builder.
      *
      * @return new builder
@@ -206,6 +217,7 @@ public final class IntIntent {
         private IntHeaderType headerType = IntHeaderType.HOP_BY_HOP;
         private Set<IntReportType> reportTypes = new HashSet<>();
         private TelemetryMode telemetryMode = TelemetryMode.INBAND_TELEMETRY;
+        private int flowId;
 
         /**
          * Assigns a selector to the IntIntent.
@@ -263,6 +275,17 @@ public final class IntIntent {
         }
 
         /**
+         * Assigns a flow id to the postcard telemetry report.
+         *
+         * @param flowId flow id
+         * @return an IntIntent builder
+         */
+        public Builder withFlowId(int flowId) {
+            this.flowId = flowId;
+            return this;
+        }
+
+        /**
          * Builds the IntIntent.
          *
          * @return an IntIntent
@@ -272,7 +295,7 @@ public final class IntIntent {
             checkArgument(!reportTypes.isEmpty(), "Report types cannot be empty.");
             checkNotNull(telemetryMode, "Telemetry mode cannot be null.");
 
-            return new IntIntent(selector, metadataTypes, headerType, reportTypes, telemetryMode);
+            return new IntIntent(selector, metadataTypes, headerType, reportTypes, telemetryMode, flowId);
         }
     }
 }

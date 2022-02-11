@@ -56,23 +56,25 @@ parser int_parser (
         packet.extract(hdr.tcp);
         local_metadata.l4_src_port = hdr.tcp.src_port;
         local_metadata.l4_dst_port = hdr.tcp.dst_port;
-        transition select(hdr.ipv4.dscp) {
+        transition accept;
+        /*transition select(hdr.ipv4.dscp) {
             DSCP_INT &&& DSCP_MASK: parse_intl4_shim;
             default: accept;
-        }
+        }*/
     }
 
     state parse_udp {
         packet.extract(hdr.udp);
         local_metadata.l4_src_port = hdr.udp.src_port;
         local_metadata.l4_dst_port = hdr.udp.dst_port;
-        transition select(hdr.ipv4.dscp) {
+        transition accept;
+        /*transition select(hdr.ipv4.dscp) {
             DSCP_INT &&& DSCP_MASK: parse_intl4_shim;
             default: accept;
-        }
+        }*/
     }
 
-    state parse_intl4_shim {
+    /*state parse_intl4_shim {
         packet.extract(hdr.intl4_shim);
         local_metadata.int_meta.intl4_shim_len = hdr.intl4_shim.len;
         transition parse_int_header;
@@ -87,7 +89,7 @@ parser int_parser (
         // Parse INT metadata stack
         packet.extract(hdr.int_data, ((bit<32>) (local_metadata.int_meta.intl4_shim_len - INT_HEADER_LEN_WORD)) << 5);
         transition accept;
-    }
+    }*/
 }
 
 control int_deparser(
@@ -103,7 +105,7 @@ control int_deparser(
         packet.emit(hdr.ipv4);
         packet.emit(hdr.tcp);
         packet.emit(hdr.udp);
-        packet.emit(hdr.intl4_shim);
+        /*packet.emit(hdr.intl4_shim);
         packet.emit(hdr.int_header);
         packet.emit(hdr.int_switch_id);
         packet.emit(hdr.int_level1_port_ids);
@@ -113,7 +115,7 @@ control int_deparser(
         packet.emit(hdr.int_egress_tstamp);
         packet.emit(hdr.int_level2_port_ids);
         packet.emit(hdr.int_egress_tx_util);
-        packet.emit(hdr.int_data);
+        packet.emit(hdr.int_data);*/
     }
 }
 

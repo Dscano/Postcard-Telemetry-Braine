@@ -1,26 +1,27 @@
 {
   "type": "object",
-  "title": "INT Intents",
+  "title": "POSTCARD Telemetry req",
 
   "required": [
-    "INT Intents"
+    "POSTCARD Telemetry req"
   ],
   "properties": {
-    "intintent": {
+    "postcardtelemetry": {
       "type": "array",
       "xml": {
-        "name": "Ints",
+        "name": "Tel",
         "wrapped": true
       },
       "items": {
         "type": "object",
-        "title": "int",
+        "title": "tel",
         "required": [
           "selector",
           "metadataTypes",
           "headerType",
           "reportTypes",
-          "telemetryMode"
+          "telemetryMode",
+          "flowId"
         ],
         "properties": {
           "selector": {
@@ -119,6 +120,10 @@
               ],
               "example": "TRACKED_FLOW"
             }
+          },
+          "flowId": {
+            "type": "string",
+            "example": "10110"
           }
         }
       }

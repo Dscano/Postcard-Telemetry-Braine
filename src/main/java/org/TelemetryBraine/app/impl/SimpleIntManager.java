@@ -17,6 +17,7 @@ package org.TelemetryBraine.app.impl;
 
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Striped;
+import com.sun.xml.bind.v2.TODO;
 import org.onlab.util.KryoNamespace;
 import org.onlab.util.SharedScheduledExecutors;
 import org.onosproject.core.ApplicationId;
@@ -388,6 +389,7 @@ public class SimpleIntManager implements IntService {
         }
 
         final boolean isEdge = !hostService.getConnectedHosts(deviceId).isEmpty();
+
         final IntDeviceRole intDeviceRole =
                 isEdge ? IntDeviceRole.SOURCE_SINK : IntDeviceRole.TRANSIT;
 
@@ -400,17 +402,19 @@ public class SimpleIntManager implements IntService {
             // Leave device with no INT configuration.
             return true;
         }
-
+        log.info("***************************");
+        log.info(String.valueOf(intProg.init()));
+        log.info("***************************");
         if (!intProg.init()) {
             log.warn("Unable to init INT pipeline on {}", deviceId);
             return false;
         }
 
         boolean supportSource = intProg.supportsFunctionality(IntProgrammable.IntFunctionality.SOURCE);
-        boolean supportSink = intProg.supportsFunctionality(IntProgrammable.IntFunctionality.SINK);
+        //boolean supportSink = intProg.supportsFunctionality(IntProgrammable.IntFunctionality.SINK);
         boolean supportPostcard = intProg.supportsFunctionality(IntProgrammable.IntFunctionality.POSTCARD);
 
-        if (intDeviceRole != IntDeviceRole.SOURCE_SINK && !supportPostcard) {
+        /*if (intDeviceRole != IntDeviceRole.SOURCE_SINK && !supportPostcard) {
             // Stop here, no more configuration needed for transit devices unless it support postcard.
             return true;
         }
@@ -420,16 +424,21 @@ public class SimpleIntManager implements IntService {
                 log.warn("Unable to apply INT report config on {}", deviceId);
                 return false;
             }
-        }
+        }*/
 
         // Port configuration.
         final Set<PortNumber> hostPorts = deviceService.getPorts(deviceId)
-                .stream()
+                .stream().map(port -> port.number()).collect(Collectors.toSet());
+                /*.stream()
                 .map(port -> new ConnectPoint(deviceId, port.number()))
                 .filter(cp -> !hostService.getConnectedHosts(cp).isEmpty())
                 .map(ConnectPoint::port)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toSet());*/
 
+        /*log.info("***************************");
+        log.info(hostPorts.toString());
+        log.info("***************************");
+        */
         for (PortNumber port : hostPorts) {
             if (supportSource) {
                 log.info("Setting port {}/{} as INT source port...", deviceId, port);
@@ -438,20 +447,20 @@ public class SimpleIntManager implements IntService {
                     return false;
                 }
             }
-            if (supportSink) {
+           /*if (supportSink) {
                 log.info("Setting port {}/{} as INT sink port...", deviceId, port);
                 if (!intProg.setSinkPort(port)) {
                     log.warn("Unable to set INT sink port {} on {}", port, deviceId);
                     return false;
                 }
-            }
+            }*/
         }
 
-        if (!supportSource && !supportPostcard) {
+        /*if (!supportSource && !supportPostcard) {
             // Stop here, no more configuration needed for sink devices unless
             // it supports postcard mode.
             return true;
-        }
+        }*/
 
         // Apply intents.
         // This is a trivial implementation where we simply get the
@@ -459,12 +468,19 @@ public class SimpleIntManager implements IntService {
         // device which support reporting.
         int appliedCount = 0;
         for (Versioned<IntIntent> versionedIntent : intentMap.values()) {
+            log.info("############################");
+            log.info(versionedIntent.value().toString());
+            log.info("############################");
             IntIntent intent = versionedIntent.value();
             IntObjective intObjective = getIntObjective(intent);
-            if (intent.telemetryMode() == IntIntent.TelemetryMode.INBAND_TELEMETRY && supportSource) {
+            /*if (intent.telemetryMode() == IntIntent.TelemetryMode.INBAND_TELEMETRY && supportSource) {
                 intProg.addIntObjective(intObjective);
                 appliedCount++;
-            } else if (intent.telemetryMode() == IntIntent.TelemetryMode.POSTCARD && supportPostcard) {
+            } else*/
+            if (intent.telemetryMode() == IntIntent.TelemetryMode.POSTCARD && supportPostcard) {
+                log.info("POSTCARD");
+                //intProg.setSinkPort();
+                //intProg.setSourcePort();
                 intProg.addIntObjective(intObjective);
                 appliedCount++;
             } else {

@@ -49,17 +49,17 @@ public final class IntConstants {
             PiMatchFieldId.of("local_metadata.l4_src_port");
     public static final PiMatchFieldId HDR_STANDARD_METADATA_INGRESS_PORT =
             PiMatchFieldId.of("standard_metadata.ingress_port");
-    public static final PiMatchFieldId HDR_INT_IS_VALID =
-            PiMatchFieldId.of("int_is_valid");
+    public static final PiMatchFieldId HDR_REPORT_IS_VALID =
+            PiMatchFieldId.of("report_is_valid");
     public static final PiMatchFieldId HDR_HDR_IPV4_DST_ADDR =
             PiMatchFieldId.of("hdr.ipv4.dst_addr");
     public static final PiMatchFieldId HDR_HDR_ETHERNET_DST_ADDR =
             PiMatchFieldId.of("hdr.ethernet.dst_addr");
     // Table IDs
-    public static final PiTableId INGRESS_PROCESS_INT_SOURCE_TB_INT_SOURCE =
-            PiTableId.of("ingress.process_int_source.tb_int_source");
-    public static final PiTableId EGRESS_PROCESS_INT_REPORT_TB_GENERATE_REPORT =
-            PiTableId.of("egress.process_int_report.tb_generate_report");
+    public static final PiTableId INGRESS_PROCESS_ACTIVATE_POSTCARD_TB_POSTCARD_TELEMETRY =
+            PiTableId.of("ingress.process_activate_postcard.tb_postcard_telemetry");
+    public static final PiTableId EGRESS_PROCESS_POSTCARD_REPORT_TB_GENERATE_REPORT =
+            PiTableId.of("egress.process_postcard_report.tb_generate_report");
     public static final PiTableId INGRESS_TABLE0_CONTROL_TABLE0 =
             PiTableId.of("ingress.table0_control.table0");
     public static final PiTableId EGRESS_PROCESS_INT_TRANSIT_TB_INT_INSERT =
@@ -83,10 +83,10 @@ public final class IntConstants {
     public static final PiCounterId INGRESS_PROCESS_INT_SOURCE_SINK_COUNTER_SET_SOURCE =
             PiCounterId.of("ingress.process_int_source_sink.counter_set_source");
     // Action IDs
-    public static final PiActionId INGRESS_PROCESS_INT_SOURCE_INT_SOURCE_DSCP =
-            PiActionId.of("ingress.process_int_source.int_source_dscp");
-    public static final PiActionId EGRESS_PROCESS_INT_REPORT_DO_REPORT_ENCAPSULATION =
-            PiActionId.of("egress.process_int_report.do_report_encapsulation");
+    public static final PiActionId INGRESS_PROCESS_ACTIVATE_POSTCARD_ACTIVATE_POSTCARD =
+            PiActionId.of("ingress.process_activate_postcard.activate_postcard");
+    public static final PiActionId EGRESS_PROCESS_POSTCARD_REPORT_DO_REPORT_ENCAPSULATION =
+            PiActionId.of("egress.process_postcard_report.do_report_encapsulation");
     public static final PiActionId INGRESS_TABLE0_CONTROL_SEND_TO_CPU =
             PiActionId.of("ingress.table0_control.send_to_cpu");
     public static final PiActionId INGRESS_PROCESS_INT_SOURCE_SINK_INT_SET_SOURCE =
@@ -112,6 +112,8 @@ public final class IntConstants {
     public static final PiActionParamId MON_IP = PiActionParamId.of("mon_ip");
     public static final PiActionParamId SWITCH_ID =
             PiActionParamId.of("switch_id");
+    public static final PiActionParamId FLOW_ID =
+            PiActionParamId.of("flow_id");
     public static final PiActionParamId SRC_MAC = PiActionParamId.of("src_mac");
     public static final PiActionParamId INS_MASK0003 =
             PiActionParamId.of("ins_mask0003");

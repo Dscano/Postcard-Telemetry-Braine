@@ -17,6 +17,7 @@
 #ifndef __PACKET_IO__
 #define __PACKET_IO__
 
+#include "telemetry_report_headers.p4"
 #include "headers.p4"
 #include "defines.p4"
 

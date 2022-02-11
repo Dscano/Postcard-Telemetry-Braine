@@ -19,12 +19,12 @@
     <parent>
         <groupId>org.onosproject</groupId>
         <artifactId>onos-dependencies</artifactId>
-        <version>2.7.0-SNAPSHOT</version>
+        <version>2.8.0-SNAPSHOT</version>
     </parent>
 
     <groupId>org.TelemetryBraine</groupId>
     <artifactId>TelemetryBraine-app</artifactId>
-    <version>2.7.0-SNAPSHOT</version>
+    <version>2.8.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
     <description>ONOS OSGi bundle archetype</description>
@@ -36,7 +36,7 @@
         <api.description>Telemetry-Braine REST API</api.description>
         <onos.app.title>Telemetry-Braine</onos.app.title>
         <onos.app.origin>SSSA</onos.app.origin>
-        <onos.app.category>default</onos.app.category>
+        <onos.app.category>Traffic-Monitoring</onos.app.category>
         <api.package>org.TelemetryBraine.app</api.package>
         <onos.app.url>http://onosproject.org</onos.app.url>
         <api.title>TelemetryBraine REST API</api.title>

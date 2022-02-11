@@ -26,10 +26,7 @@ const bit<6> DSCP_MASK = 0x3F;
 
 typedef bit<48> timestamp_t;
 typedef bit<32> switch_id_t;
-
-const bit<8> INT_HEADER_LEN_WORD = 3;
-const bit<16> INT_HEADER_SIZE = 8;
-const bit<16> INT_SHIM_HEADER_SIZE = 4;
+typedef bit<32> flow_id_t;
 
 const bit<8> CPU_MIRROR_SESSION_ID = 250;
 const bit<32> REPORT_MIRROR_SESSION_ID = 500;

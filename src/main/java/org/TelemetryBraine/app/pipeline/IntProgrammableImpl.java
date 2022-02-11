@@ -72,11 +72,11 @@ public class IntProgrammableImpl extends AbstractHandlerBehaviour implements Int
             Criterion.Type.IP_PROTO);
 
     private static final Set<PiTableId> TABLES_TO_CLEANUP = Sets.newHashSet(
-            IntConstants.INGRESS_PROCESS_INT_SOURCE_TB_INT_SOURCE,
+            IntConstants.INGRESS_PROCESS_ACTIVATE_POSTCARD_TB_POSTCARD_TELEMETRY,
             IntConstants.INGRESS_PROCESS_INT_SOURCE_SINK_TB_SET_SOURCE,
             IntConstants.INGRESS_PROCESS_INT_SOURCE_SINK_TB_SET_SINK,
             IntConstants.EGRESS_PROCESS_INT_TRANSIT_TB_INT_INSERT,
-            IntConstants.EGRESS_PROCESS_INT_REPORT_TB_GENERATE_REPORT);
+            IntConstants.EGRESS_PROCESS_POSTCARD_REPORT_TB_GENERATE_REPORT);
 
     @Reference(cardinality = ReferenceCardinality.MANDATORY)
     private FlowRuleService flowRuleService;
@@ -110,14 +110,19 @@ public class IntProgrammableImpl extends AbstractHandlerBehaviour implements Int
                 ImmutableByteSequence.copyFrom(
                         Integer.parseInt(deviceId.toString().substring(
                                 deviceId.toString().length() - 2))));
+        PiActionParam transitIdParam2 = new PiActionParam(
+                IntConstants.FLOW_ID,
+                ImmutableByteSequence.copyFrom(0xc));
+
         TrafficSelector selector = DefaultTrafficSelector.builder()
                 .matchPi(PiCriterion.builder().matchExact(
-                        IntConstants.HDR_INT_IS_VALID, (byte) 0x01)
+                        IntConstants.HDR_REPORT_IS_VALID, (byte) 0x01)
                          .build())
                 .build();
         PiAction transitAction = PiAction.builder()
                 .withId(IntConstants.EGRESS_PROCESS_INT_TRANSIT_INIT_METADATA)
                 .withParameter(transitIdParam)
+                .withParameter(transitIdParam2)
                 .build();
         TrafficTreatment treatment = DefaultTrafficTreatment.builder()
                 .piTableAction(transitAction)
@@ -143,7 +148,9 @@ public class IntProgrammableImpl extends AbstractHandlerBehaviour implements Int
         if (!setupBehaviour()) {
             return false;
         }
-
+        log.info("****************************");
+        log.info(port.toString());
+        log.info("****************************");
         // process_int_source_sink.tb_set_source for each host-facing port
         PiCriterion ingressCriterion = PiCriterion.builder()
                 .matchExact(IntConstants.HDR_STANDARD_METADATA_INGRESS_PORT, port.toLong())
@@ -175,7 +182,6 @@ public class IntProgrammableImpl extends AbstractHandlerBehaviour implements Int
         if (!setupBehaviour()) {
             return false;
         }
-
         // process_set_source_sink.tb_set_sink
         PiCriterion egressCriterion = PiCriterion.builder()
                 .matchExact(IntConstants.HDR_STANDARD_METADATA_EGRESS_SPEC, port.toLong())
@@ -239,6 +245,8 @@ public class IntProgrammableImpl extends AbstractHandlerBehaviour implements Int
             case SINK:
             case TRANSIT:
                 return true;
+            case POSTCARD:
+                return true;
             default:
                 log.warn("Unknown functionality {}", functionality);
                 return false;
@@ -289,11 +297,11 @@ public class IntProgrammableImpl extends AbstractHandlerBehaviour implements Int
                 ImmutableByteSequence.copyFrom((instructionBitmap >> 8) & 0xF));
 
         PiAction intSourceAction = PiAction.builder()
-                .withId(IntConstants.INGRESS_PROCESS_INT_SOURCE_INT_SOURCE_DSCP)
-                .withParameter(hopMetaLenParam)
-                .withParameter(hopCntParam)
-                .withParameter(inst0003Param)
-                .withParameter(inst0407Param)
+                .withId(IntConstants.INGRESS_PROCESS_ACTIVATE_POSTCARD_ACTIVATE_POSTCARD)
+                //.withParameter(hopMetaLenParam)
+                //.withParameter(hopCntParam)
+                //.withParameter(inst0003Param)
+                //.withParameter(inst0407Param)
                 .build();
 
         TrafficTreatment instTreatment = DefaultTrafficTreatment.builder()
@@ -347,9 +355,10 @@ public class IntProgrammableImpl extends AbstractHandlerBehaviour implements Int
                 .withSelector(sBuilder.build())
                 .withTreatment(instTreatment)
                 .withPriority(DEFAULT_PRIORITY)
-                .forTable(IntConstants.INGRESS_PROCESS_INT_SOURCE_TB_INT_SOURCE)
+                .forTable(IntConstants.INGRESS_PROCESS_ACTIVATE_POSTCARD_TB_POSTCARD_TELEMETRY)
                 .fromApp(appId)
-                .withIdleTimeout(IDLE_TIMEOUT)
+                .makePermanent()
+                //.withIdleTimeout(IDLE_TIMEOUT)
                 .build();
     }
 
@@ -449,7 +458,7 @@ public class IntProgrammableImpl extends AbstractHandlerBehaviour implements Int
     private FlowRule buildReportEntry(IntDeviceConfig cfg) {
         TrafficSelector selector = DefaultTrafficSelector.builder()
                 .matchPi(PiCriterion.builder().matchExact(
-                         IntConstants.HDR_INT_IS_VALID, (byte) 0x01)
+                         IntConstants.HDR_REPORT_IS_VALID, (byte) 0x01)
                                  .build())
                 .build();
         PiActionParam srcMacParam = new PiActionParam(
@@ -468,7 +477,7 @@ public class IntProgrammableImpl extends AbstractHandlerBehaviour implements Int
                 IntConstants.MON_PORT,
                 ImmutableByteSequence.copyFrom(cfg.collectorPort().toInt()));
         PiAction reportAction = PiAction.builder()
-                .withId(IntConstants.EGRESS_PROCESS_INT_REPORT_DO_REPORT_ENCAPSULATION)
+                .withId(IntConstants.EGRESS_PROCESS_POSTCARD_REPORT_DO_REPORT_ENCAPSULATION)
                 .withParameter(srcMacParam)
                 .withParameter(nextHopMacParam)
                 .withParameter(srcIpParam)
@@ -486,7 +495,7 @@ public class IntProgrammableImpl extends AbstractHandlerBehaviour implements Int
                 .withPriority(DEFAULT_PRIORITY)
                 .makePermanent()
                 .forDevice(this.data().deviceId())
-                .forTable(IntConstants.EGRESS_PROCESS_INT_REPORT_TB_GENERATE_REPORT)
+                .forTable(IntConstants.EGRESS_PROCESS_POSTCARD_REPORT_TB_GENERATE_REPORT)
                 .build();
     }
 
