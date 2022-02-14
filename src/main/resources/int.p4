@@ -12,6 +12,7 @@
 #include "include/checksums.p4"
 #include "include/int_parser.p4"
 #include "include/activate_postcard.p4"
+#include "include/post_transit.p4"
 #include "include/int_transit.p4"
 #include "include/postcard_report.p4"
 
@@ -46,8 +47,9 @@ control egress (
             #ifdef TARGET_BMV2
             if (IS_I2E_CLONE(standard_metadata)) {
                 /* send postcard report */
+                process_post_meta.apply(hdr, local_metadata, standard_metadata);
+                process_postcard_report.apply(hdr, local_metadata, standard_metadata);
                 process_int_transit.apply(hdr, local_metadata, standard_metadata);
-                process_postcard_report.apply(hdr, local_metadata, standard_metadata); 
             }
         	#endif // TARGET_BMV2
         port_counters_egress.apply(hdr, standard_metadata);

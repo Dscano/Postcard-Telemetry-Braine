@@ -121,8 +121,8 @@ tables {
 }
 tables {
   preamble {
-    id: 33604451
-    name: "egress.process_int_transit.tb_int_insert"
+    id: 33584145
+    name: "egress.process_post_meta.tb_int_insert"
     alias: "tb_int_insert"
   }
   match_fields {
@@ -132,7 +132,7 @@ tables {
     match_type: EXACT
   }
   action_refs {
-    id: 16824828
+    id: 16829596
   }
   action_refs {
     id: 16819938
@@ -218,8 +218,15 @@ actions {
 }
 actions {
   preamble {
-    id: 16824828
-    name: "egress.process_int_transit.init_metadata"
+    id: 16800567
+    name: "NoAction"
+    alias: "NoAction"
+  }
+}
+actions {
+  preamble {
+    id: 16829596
+    name: "egress.process_post_meta.init_metadata"
     alias: "init_metadata"
   }
   params {
@@ -231,6 +238,16 @@ actions {
     id: 2
     name: "flow_id"
     bitwidth: 32
+  }
+  params {
+    id: 3
+    name: "instruction_mask_0003"
+    bitwidth: 4
+  }
+  params {
+    id: 4
+    name: "instruction_mask_0407"
+    bitwidth: 4
   }
 }
 actions {

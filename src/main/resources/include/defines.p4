@@ -44,6 +44,8 @@ typedef bit<16> next_hop_id_t;
 typedef bit<48> timestamp_t;
 typedef bit<32> switch_id_t;
 typedef bit<32> flow_id_t;
+typedef bit<4>  instruction_mask_0003_t; 
+typedef bit<4>  instruction_mask_0407_t;
 
 
 const bit<8> CPU_MIRROR_SESSION_ID = 250;

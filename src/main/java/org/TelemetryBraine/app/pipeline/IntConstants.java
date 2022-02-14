@@ -62,8 +62,8 @@ public final class IntConstants {
             PiTableId.of("egress.process_postcard_report.tb_generate_report");
     public static final PiTableId INGRESS_TABLE0_CONTROL_TABLE0 =
             PiTableId.of("ingress.table0_control.table0");
-    public static final PiTableId EGRESS_PROCESS_INT_TRANSIT_TB_INT_INSERT =
-            PiTableId.of("egress.process_int_transit.tb_int_insert");
+    public static final PiTableId EGRESS_PROCESS_POST_META_TB_INT_INSERT =
+            PiTableId.of("egress.process_post_meta.tb_int_insert");
     public static final PiTableId INGRESS_PROCESS_INT_SOURCE_SINK_TB_SET_SINK =
             PiTableId.of("ingress.process_int_source_sink.tb_set_sink");
     public static final PiTableId INGRESS_PROCESS_INT_SOURCE_SINK_TB_SET_SOURCE =
@@ -98,12 +98,12 @@ public final class IntConstants {
             PiActionId.of("ingress.table0_control.set_next_hop_id");
     public static final PiActionId INGRESS_TABLE0_CONTROL_SET_EGRESS_PORT =
             PiActionId.of("ingress.table0_control.set_egress_port");
-    public static final PiActionId EGRESS_PROCESS_INT_TRANSIT_INIT_METADATA =
-            PiActionId.of("egress.process_int_transit.init_metadata");
+    public static final PiActionId EGRESS_PROCESS_POST_META_INIT_METADATA =
+            PiActionId.of("egress.process_post_meta.init_metadata");
     public static final PiActionId NOP = PiActionId.of("nop");
     // Action Param IDs
     public static final PiActionParamId INS_MASK0407 =
-            PiActionParamId.of("ins_mask0407");
+            PiActionParamId.of("instruction_mask_0407");
     public static final PiActionParamId NEXT_HOP_ID =
             PiActionParamId.of("next_hop_id");
     public static final PiActionParamId MON_PORT =
@@ -116,7 +116,7 @@ public final class IntConstants {
             PiActionParamId.of("flow_id");
     public static final PiActionParamId SRC_MAC = PiActionParamId.of("src_mac");
     public static final PiActionParamId INS_MASK0003 =
-            PiActionParamId.of("ins_mask0003");
+            PiActionParamId.of("instruction_mask_0003");
     public static final PiActionParamId REMAINING_HOP_CNT =
             PiActionParamId.of("remaining_hop_cnt");
     public static final PiActionParamId HOP_METADATA_LEN =

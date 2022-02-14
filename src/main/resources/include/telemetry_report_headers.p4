@@ -16,8 +16,16 @@ header report_fixed_header_t {
     bit<6>  hw_id;
     bit<32> sw_id;
     bit<32> seq_no; 
-    bit<32> flow_id; 
-    bit<32> hop_latency; 
+    bit<32> flow_id;
+    bit<32> hop_latency;
+    bit<8> q_id;
+    bit<24> q_occupancy; 
+    bit<32> ingress_tstamp;
+    bit<32> egress_tstamp;
+    bit<16> ingress_port_id;
+    bit<16> egress_port_id;
+    bit<32> egress_port_tx_util;
+
 }
 const bit<8> REPORT_FIXED_HEADER_LEN = 16;
 

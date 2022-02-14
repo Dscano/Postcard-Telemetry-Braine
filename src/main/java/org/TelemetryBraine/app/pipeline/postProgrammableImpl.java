@@ -60,7 +60,6 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
     // TODO: change this value to the value of diameter of a network.
     private static final int MAXHOP = 64;
     private static final int PORTMASK = 0xffff;
-    private static final int IDLE_TIMEOUT = 100;
     // Application name of the pipeline which adds this implementation to the pipeconf
     private static final String PIPELINE_APP_NAME = "org.TelemetryBraine.app.pipeline";
     private final Logger log = getLogger(getClass());
@@ -76,7 +75,7 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
             IntConstants.INGRESS_PROCESS_ACTIVATE_POSTCARD_TB_POSTCARD_TELEMETRY,
             IntConstants.INGRESS_PROCESS_INT_SOURCE_SINK_TB_SET_SOURCE,
             IntConstants.INGRESS_PROCESS_INT_SOURCE_SINK_TB_SET_SINK,
-            IntConstants.EGRESS_PROCESS_INT_TRANSIT_TB_INT_INSERT,
+            IntConstants.EGRESS_PROCESS_POST_META_TB_INT_INSERT,
             IntConstants.EGRESS_PROCESS_POSTCARD_REPORT_TB_GENERATE_REPORT);
 
     @Reference(cardinality = ReferenceCardinality.MANDATORY)
@@ -122,7 +121,7 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
                          .build())
                 .build();
         PiAction transitAction = PiAction.builder()
-                .withId(IntConstants.EGRESS_PROCESS_INT_TRANSIT_INIT_METADATA)
+                .withId(IntConstants.EGRESS_PROCESS_POST_META_INIT_METADATA)
                 .withParameter(transitIdParam)
                 .withParameter(transitIdParam2)
                 .build();
@@ -137,7 +136,7 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
                 .withPriority(DEFAULT_PRIORITY)
                 .makePermanent()
                 .forDevice(deviceId)
-                .forTable(IntConstants.EGRESS_PROCESS_INT_TRANSIT_TB_INT_INSERT)
+                .forTable(IntConstants.EGRESS_PROCESS_POST_META_TB_INT_INSERT)
                 .build();
 
         flowRuleService.applyFlowRules(transitFlowRule);
@@ -145,43 +144,6 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
         return true;
     }
 
-    public void setFlowId(Integer flowId){
-        log.info("****************************");
-        log.info(flowId.toString());
-        log.info("****************************");
-
-        PiActionParam transitIdParam = new PiActionParam(
-                IntConstants.SWITCH_ID,
-                ImmutableByteSequence.copyFrom(
-                        Integer.parseInt(deviceId.toString().substring(
-                                deviceId.toString().length() - 2))));
-
-        PiActionParam transitIdParam2 = new PiActionParam(
-                IntConstants.FLOW_ID,
-                ImmutableByteSequence.copyFrom(flowId));
-
-
-        PiAction transitAction = PiAction.builder()
-                .withId(IntConstants.EGRESS_PROCESS_INT_TRANSIT_INIT_METADATA)
-                .withParameter(transitIdParam)
-                .withParameter(transitIdParam2)
-                .build();
-
-        TrafficTreatment treatment = DefaultTrafficTreatment.builder()
-                .piTableAction(transitAction)
-                .build();
-
-        FlowRule srcFlowRule = DefaultFlowRule.builder()
-                .withTreatment(treatment)
-                .fromApp(appId)
-                .withPriority(DEFAULT_PRIORITY)
-                .makePermanent()
-                .forDevice(deviceId)
-                .forTable(IntConstants.EGRESS_PROCESS_INT_TRANSIT_TB_INT_INSERT)
-                .build();
-
-        flowRuleService.applyFlowRules(srcFlowRule);
-    }
 
     @Override
     public boolean setSourcePort(PortNumber port) {
@@ -411,21 +373,38 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
         log.info(obj.metadataTypes().toString());
         log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
 
-        PiActionParam transitIdParam = new PiActionParam(
+        int instructionBitmap = buildInstructionBitmap(obj.metadataTypes());
+
+        TrafficSelector selector = DefaultTrafficSelector.builder()
+                .matchPi(PiCriterion.builder().matchExact(
+                        IntConstants.HDR_REPORT_IS_VALID, (byte) 0x01)
+                        .build())
+                .build();
+
+        PiActionParam transitSwitchId = new PiActionParam(
                 IntConstants.SWITCH_ID,
                 ImmutableByteSequence.copyFrom(
                         Integer.parseInt(deviceId.toString().substring(
                                 deviceId.toString().length() - 2))));
 
-        PiActionParam transitIdParam2 = new PiActionParam(
+        PiActionParam transitFlowId = new PiActionParam(
                 IntConstants.FLOW_ID,
                 ImmutableByteSequence.copyFrom(obj.flowIf()));
 
+        PiActionParam inst0003Param = new PiActionParam(
+                IntConstants.INS_MASK0003,
+                ImmutableByteSequence.copyFrom((instructionBitmap >> 12) & 0xF));
+
+        PiActionParam inst0407Param = new PiActionParam(
+                IntConstants.INS_MASK0407,
+                ImmutableByteSequence.copyFrom((instructionBitmap >> 8) & 0xF));
 
         PiAction transitAction = PiAction.builder()
-                .withId(IntConstants.EGRESS_PROCESS_INT_TRANSIT_INIT_METADATA)
-                .withParameter(transitIdParam)
-                .withParameter(transitIdParam2)
+                .withId(IntConstants.EGRESS_PROCESS_POST_META_INIT_METADATA)
+                .withParameter(transitSwitchId)
+                .withParameter(transitFlowId)
+                .withParameter(inst0003Param)
+                .withParameter(inst0407Param)
                 .build();
 
         TrafficTreatment treatment = DefaultTrafficTreatment.builder()
@@ -433,16 +412,17 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
                 .build();
 
         flowRules.add(DefaultFlowRule.builder()
+                .withSelector(selector)
                 .withTreatment(treatment)
                 .fromApp(appId)
                 .withPriority(DEFAULT_PRIORITY)
                 .makePermanent()
                 .forDevice(deviceId)
-                .forTable(IntConstants.EGRESS_PROCESS_INT_TRANSIT_TB_INT_INSERT)
+                .forTable(IntConstants.EGRESS_PROCESS_POST_META_TB_INT_INSERT)
                 .build());
 
 
-        int instructionBitmap = buildInstructionBitmap(obj.metadataTypes());
+        /*int instructionBitmap = buildInstructionBitmap(obj.metadataTypes());
         PiActionParam hopMetaLenParam = new PiActionParam(
                 IntConstants.HOP_METADATA_LEN,
                 ImmutableByteSequence.copyFrom(Integer.bitCount(instructionBitmap)));
@@ -454,14 +434,10 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
                 ImmutableByteSequence.copyFrom((instructionBitmap >> 12) & 0xF));
         PiActionParam inst0407Param = new PiActionParam(
                 IntConstants.INS_MASK0407,
-                ImmutableByteSequence.copyFrom((instructionBitmap >> 8) & 0xF));
+                ImmutableByteSequence.copyFrom((instructionBitmap >> 8) & 0xF));*/
 
         PiAction intSourceAction = PiAction.builder()
                 .withId(IntConstants.INGRESS_PROCESS_ACTIVATE_POSTCARD_ACTIVATE_POSTCARD)
-                //.withParameter(hopMetaLenParam)
-                //.withParameter(hopCntParam)
-                //.withParameter(inst0003Param)
-                //.withParameter(inst0407Param)
                 .build();
 
         TrafficTreatment instTreatment = DefaultTrafficTreatment.builder()
@@ -519,7 +495,6 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
                     .forTable(IntConstants.INGRESS_PROCESS_ACTIVATE_POSTCARD_TB_POSTCARD_TELEMETRY)
                     .fromApp(appId)
                     .makePermanent()
-                    //.withIdleTimeout(IDLE_TIMEOUT)
                     .build()
             );
 
@@ -530,9 +505,9 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
         int instBitmap = 0;
         for (IntMetadataType metadataType : metadataTypes) {
             switch (metadataType) {
-                case SWITCH_ID:
+                /*case SWITCH_ID:
                     instBitmap |= (1 << 15);
-                    break;
+                    break;*/
                 case L1_PORT_ID:
                     instBitmap |= (1 << 14);
                     break;

@@ -437,11 +437,12 @@ public class SimpleIntManager implements IntService {
             return false;
         }
 
-        boolean supportSource = postProg.supportsFunctionality(postProgrammable.IntFunctionality.SOURCE);
-        boolean supportSink = postProg.supportsFunctionality(postProgrammable.IntFunctionality.SINK);
+        //boolean supportSource = postProg.supportsFunctionality(postProgrammable.IntFunctionality.SOURCE);
+        //boolean supportSink = postProg.supportsFunctionality(postProgrammable.IntFunctionality.SINK);
         boolean supportPostcard = postProg.supportsFunctionality(postProgrammable.IntFunctionality.POSTCARD);
+        postProg.setupIntConfig(intConfig.get());
 
-        if (intDeviceRole != IntDeviceRole.SOURCE_SINK && !supportPostcard) {
+        /*if (intDeviceRole != IntDeviceRole.SOURCE_SINK && !supportPostcard) {
             // Stop here, no more configuration needed for transit devices unless it support postcard.
             return true;
         }
@@ -453,19 +454,19 @@ public class SimpleIntManager implements IntService {
             }
         }
 
-        // Port configuration.
+        Port configuration.
         final Set<PortNumber> hostPorts = deviceService.getPorts(deviceId)
                 .stream().map(port -> port.number()).collect(Collectors.toSet());
-                /*.stream()
+                .stream()
                 .map(port -> new ConnectPoint(deviceId, port.number()))
                 .filter(cp -> !hostService.getConnectedHosts(cp).isEmpty())
                 .map(ConnectPoint::port)
-                .collect(Collectors.toSet());*/
+                .collect(Collectors.toSet());
 
-        /*log.info("***************************");
+        log.info("***************************");
         log.info(hostPorts.toString());
         log.info("***************************");
-        */
+
         for (PortNumber port : hostPorts) {
             if (supportSource) {
                 log.info("Setting port {}/{} as INT source port...", deviceId, port);
@@ -483,7 +484,7 @@ public class SimpleIntManager implements IntService {
             }
         }
 
-        /*if (!supportSource && !supportPostcard) {
+        if (!supportSource && !supportPostcard) {
             // Stop here, no more configuration needed for sink devices unless
             // it supports postcard mode.
             return true;

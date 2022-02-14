@@ -65,6 +65,8 @@ const bit<8> UDP_HEADER_LEN = 8;
 struct postcard_metadata_t {
     switch_id_t switch_id;
     flow_id_t flow_id;
+    instruction_mask_0003_t instruction_mask_0003;
+    instruction_mask_0407_t instruction_mask_0407;
     bit<16> new_bytes;
     bit<8>  new_words;
     _BOOL  activate_postcard;
