@@ -16,15 +16,15 @@
 package org.TelemetryBraine.app.pipeline;
 
 import com.google.common.collect.Sets;
-import org.onosproject.net.behaviour.inbandtelemetry.IntMetadataType;
+import org.TelemetryBraine.app.postcard.IntMetadataType;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.onlab.util.ImmutableByteSequence;
 import org.onosproject.core.ApplicationId;
 import org.onosproject.core.CoreService;
-import org.onosproject.net.behaviour.inbandtelemetry.IntDeviceConfig;
-import org.onosproject.net.behaviour.inbandtelemetry.IntObjective;
-import org.onosproject.net.behaviour.inbandtelemetry.IntProgrammable;
+import org.TelemetryBraine.app.postcard.IntDeviceConfig;
+import org.TelemetryBraine.app.postcard.IntObjective;
+import org.TelemetryBraine.app.postcard.postProgrammable;
 import org.onosproject.net.DeviceId;
 import org.onosproject.net.PortNumber;
 import org.onosproject.net.driver.AbstractHandlerBehaviour;
@@ -48,13 +48,14 @@ import org.onosproject.net.pi.runtime.PiAction;
 import org.onosproject.net.pi.runtime.PiActionParam;
 import org.slf4j.Logger;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class IntProgrammableImpl extends AbstractHandlerBehaviour implements IntProgrammable {
+public class postProgrammableImpl extends AbstractHandlerBehaviour implements postProgrammable {
 
     // TODO: change this value to the value of diameter of a network.
     private static final int MAXHOP = 64;
@@ -110,6 +111,7 @@ public class IntProgrammableImpl extends AbstractHandlerBehaviour implements Int
                 ImmutableByteSequence.copyFrom(
                         Integer.parseInt(deviceId.toString().substring(
                                 deviceId.toString().length() - 2))));
+
         PiActionParam transitIdParam2 = new PiActionParam(
                 IntConstants.FLOW_ID,
                 ImmutableByteSequence.copyFrom(0xc));
@@ -141,6 +143,44 @@ public class IntProgrammableImpl extends AbstractHandlerBehaviour implements Int
         flowRuleService.applyFlowRules(transitFlowRule);
 
         return true;
+    }
+
+    public void setFlowId(Integer flowId){
+        log.info("****************************");
+        log.info(flowId.toString());
+        log.info("****************************");
+
+        PiActionParam transitIdParam = new PiActionParam(
+                IntConstants.SWITCH_ID,
+                ImmutableByteSequence.copyFrom(
+                        Integer.parseInt(deviceId.toString().substring(
+                                deviceId.toString().length() - 2))));
+
+        PiActionParam transitIdParam2 = new PiActionParam(
+                IntConstants.FLOW_ID,
+                ImmutableByteSequence.copyFrom(flowId));
+
+
+        PiAction transitAction = PiAction.builder()
+                .withId(IntConstants.EGRESS_PROCESS_INT_TRANSIT_INIT_METADATA)
+                .withParameter(transitIdParam)
+                .withParameter(transitIdParam2)
+                .build();
+
+        TrafficTreatment treatment = DefaultTrafficTreatment.builder()
+                .piTableAction(transitAction)
+                .build();
+
+        FlowRule srcFlowRule = DefaultFlowRule.builder()
+                .withTreatment(treatment)
+                .fromApp(appId)
+                .withPriority(DEFAULT_PRIORITY)
+                .makePermanent()
+                .forDevice(deviceId)
+                .forTable(IntConstants.EGRESS_PROCESS_INT_TRANSIT_TB_INT_INSERT)
+                .build();
+
+        flowRuleService.applyFlowRules(srcFlowRule);
     }
 
     @Override
@@ -211,7 +251,6 @@ public class IntProgrammableImpl extends AbstractHandlerBehaviour implements Int
     @Override
     public boolean addIntObjective(IntObjective obj) {
         // TODO: support different types of watchlist other than flow watchlist
-
         return processIntObjective(obj, true);
     }
 
@@ -282,6 +321,9 @@ public class IntProgrammableImpl extends AbstractHandlerBehaviour implements Int
     }
 
     private FlowRule buildWatchlistEntry(IntObjective obj) {
+        log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+        log.info(obj.metadataTypes().toString());
+        log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         int instructionBitmap = buildInstructionBitmap(obj.metadataTypes());
         PiActionParam hopMetaLenParam = new PiActionParam(
                 IntConstants.HOP_METADATA_LEN,
@@ -362,6 +404,128 @@ public class IntProgrammableImpl extends AbstractHandlerBehaviour implements Int
                 .build();
     }
 
+    private Set<FlowRule> buildWatchlistEntries(IntObjective obj) {
+        Set<FlowRule> flowRules = new HashSet<>();
+
+        log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+        log.info(obj.metadataTypes().toString());
+        log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+
+        PiActionParam transitIdParam = new PiActionParam(
+                IntConstants.SWITCH_ID,
+                ImmutableByteSequence.copyFrom(
+                        Integer.parseInt(deviceId.toString().substring(
+                                deviceId.toString().length() - 2))));
+
+        PiActionParam transitIdParam2 = new PiActionParam(
+                IntConstants.FLOW_ID,
+                ImmutableByteSequence.copyFrom(obj.flowIf()));
+
+
+        PiAction transitAction = PiAction.builder()
+                .withId(IntConstants.EGRESS_PROCESS_INT_TRANSIT_INIT_METADATA)
+                .withParameter(transitIdParam)
+                .withParameter(transitIdParam2)
+                .build();
+
+        TrafficTreatment treatment = DefaultTrafficTreatment.builder()
+                .piTableAction(transitAction)
+                .build();
+
+        flowRules.add(DefaultFlowRule.builder()
+                .withTreatment(treatment)
+                .fromApp(appId)
+                .withPriority(DEFAULT_PRIORITY)
+                .makePermanent()
+                .forDevice(deviceId)
+                .forTable(IntConstants.EGRESS_PROCESS_INT_TRANSIT_TB_INT_INSERT)
+                .build());
+
+
+        int instructionBitmap = buildInstructionBitmap(obj.metadataTypes());
+        PiActionParam hopMetaLenParam = new PiActionParam(
+                IntConstants.HOP_METADATA_LEN,
+                ImmutableByteSequence.copyFrom(Integer.bitCount(instructionBitmap)));
+        PiActionParam hopCntParam = new PiActionParam(
+                IntConstants.REMAINING_HOP_CNT,
+                ImmutableByteSequence.copyFrom(MAXHOP));
+        PiActionParam inst0003Param = new PiActionParam(
+                IntConstants.INS_MASK0003,
+                ImmutableByteSequence.copyFrom((instructionBitmap >> 12) & 0xF));
+        PiActionParam inst0407Param = new PiActionParam(
+                IntConstants.INS_MASK0407,
+                ImmutableByteSequence.copyFrom((instructionBitmap >> 8) & 0xF));
+
+        PiAction intSourceAction = PiAction.builder()
+                .withId(IntConstants.INGRESS_PROCESS_ACTIVATE_POSTCARD_ACTIVATE_POSTCARD)
+                //.withParameter(hopMetaLenParam)
+                //.withParameter(hopCntParam)
+                //.withParameter(inst0003Param)
+                //.withParameter(inst0407Param)
+                .build();
+
+        TrafficTreatment instTreatment = DefaultTrafficTreatment.builder()
+                .piTableAction(intSourceAction)
+                .build();
+
+        TrafficSelector.Builder sBuilder = DefaultTrafficSelector.builder();
+        for (Criterion criterion : obj.selector().criteria()) {
+            switch (criterion.type()) {
+                case IPV4_SRC:
+                    sBuilder.matchIPSrc(((IPCriterion) criterion).ip());
+                    break;
+                case IPV4_DST:
+                    sBuilder.matchIPDst(((IPCriterion) criterion).ip());
+                    break;
+                case TCP_SRC:
+                    sBuilder.matchPi(
+                            PiCriterion.builder().matchTernary(
+                                    IntConstants.HDR_LOCAL_METADATA_L4_SRC_PORT,
+                                    ((TcpPortCriterion) criterion).tcpPort().toInt(), PORTMASK)
+                                    .build());
+                    break;
+                case UDP_SRC:
+                    sBuilder.matchPi(
+                            PiCriterion.builder().matchTernary(
+                                    IntConstants.HDR_LOCAL_METADATA_L4_SRC_PORT,
+                                    ((UdpPortCriterion) criterion).udpPort().toInt(), PORTMASK)
+                                    .build());
+                    break;
+                case TCP_DST:
+                    sBuilder.matchPi(
+                            PiCriterion.builder().matchTernary(
+                                    IntConstants.HDR_LOCAL_METADATA_L4_DST_PORT,
+                                    ((TcpPortCriterion) criterion).tcpPort().toInt(), PORTMASK)
+                                    .build());
+                    break;
+                case UDP_DST:
+                    sBuilder.matchPi(
+                            PiCriterion.builder().matchTernary(
+                                    IntConstants.HDR_LOCAL_METADATA_L4_DST_PORT,
+                                    ((UdpPortCriterion) criterion).udpPort().toInt(), PORTMASK)
+                                    .build());
+                    break;
+                default:
+                    log.warn("Unsupported criterion type: {}", criterion.type());
+            }
+        }
+
+            flowRules.add(
+                    DefaultFlowRule.builder()
+                    .forDevice(this.data().deviceId())
+                    .withSelector(sBuilder.build())
+                    .withTreatment(instTreatment)
+                    .withPriority(DEFAULT_PRIORITY)
+                    .forTable(IntConstants.INGRESS_PROCESS_ACTIVATE_POSTCARD_TB_POSTCARD_TELEMETRY)
+                    .fromApp(appId)
+                    .makePermanent()
+                    //.withIdleTimeout(IDLE_TIMEOUT)
+                    .build()
+            );
+
+        return flowRules;
+    }
+
     private int buildInstructionBitmap(Set<IntMetadataType> metadataTypes) {
         int instBitmap = 0;
         for (IntMetadataType metadataType : metadataTypes) {
@@ -422,8 +586,27 @@ public class IntProgrammableImpl extends AbstractHandlerBehaviour implements Int
             return false;
         }
 
-        FlowRule flowRule = buildWatchlistEntry(obj);
-        if (flowRule != null) {
+        //FlowRule flowRule = buildWatchlistEntry(obj);
+        Set<FlowRule> flowRules = buildWatchlistEntries(obj);
+        if (flowRules != null) {
+            if (install) {
+                flowRules.forEach(flowRule -> {
+                flowRuleService.applyFlowRules(flowRule);}
+                );
+            } else {
+                flowRules.forEach(flowRule -> {
+                    flowRuleService.removeFlowRules(flowRule);
+                });
+            }
+            log.debug("IntObjective {} has been {} {}",
+                    obj, install ? "installed to" : "removed from", deviceId);
+            return true;
+        } else {
+            log.warn("Failed to {} IntObjective {} on {}",
+                    install ? "install" : "remove", obj, deviceId);
+            return false;
+        }
+        /*if (flowRule != null) {
             if (install) {
                 flowRuleService.applyFlowRules(flowRule);
             } else {
@@ -436,7 +619,7 @@ public class IntProgrammableImpl extends AbstractHandlerBehaviour implements Int
             log.warn("Failed to {} IntObjective {} on {}",
                      install ? "install" : "remove", obj, deviceId);
             return false;
-        }
+        }*/
     }
 
     private boolean setupIntReportInternal(IntDeviceConfig cfg) {

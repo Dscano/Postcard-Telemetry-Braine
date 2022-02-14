@@ -16,7 +16,8 @@
 package org.TelemetryBraine.app.api;
 
 import com.google.common.annotations.Beta;
-import org.onosproject.net.behaviour.inbandtelemetry.IntDeviceConfig;
+//import org.onosproject.net.behaviour.inbandtelemetry.IntDeviceConfig;
+import org.TelemetryBraine.app.postcard.IntDeviceConfig;
 import org.onosproject.net.DeviceId;
 
 import java.util.Map;

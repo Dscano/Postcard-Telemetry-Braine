@@ -17,7 +17,8 @@ package org.TelemetryBraine.app.api;
 
 import com.google.common.annotations.Beta;
 import com.google.common.base.Objects;
-import org.onosproject.net.behaviour.inbandtelemetry.IntMetadataType;
+//import org.onosproject.net.behaviour.inbandtelemetry.IntMetadataType;
+import org.TelemetryBraine.app.postcard.IntMetadataType;
 import org.onosproject.net.flow.DefaultTrafficSelector;
 import org.onosproject.net.flow.TrafficSelector;
 
@@ -103,7 +104,7 @@ public final class IntIntent {
     // telemetry mode
     private final TelemetryMode telemetryMode;
     // flow id
-    private final int flowId;
+    private final Integer flowId;
 
     /**
      * Creates an IntIntent.
@@ -140,7 +141,7 @@ public final class IntIntent {
      *
      * @return set of metadata type
      */
-    public Set<IntMetadataType> metadataTypes() {
+    public Set<org.TelemetryBraine.app.postcard.IntMetadataType> metadataTypes() {
         return metadataTypes;
     }
 

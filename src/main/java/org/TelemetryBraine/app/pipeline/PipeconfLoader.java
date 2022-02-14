@@ -18,7 +18,7 @@ package org.TelemetryBraine.app.pipeline;
 
 import com.google.common.collect.ImmutableList;
 import org.onosproject.core.CoreService;
-import org.onosproject.net.behaviour.inbandtelemetry.IntProgrammable;
+import org.TelemetryBraine.app.postcard.postProgrammable;
 import org.onosproject.net.behaviour.Pipeliner;
 import org.onosproject.net.device.PortStatisticsDiscovery;
 import org.onosproject.net.pi.model.DefaultPiPipeconf;
@@ -104,7 +104,7 @@ public final class PipeconfLoader {
                 .addBehaviour(PiPipelineInterpreter.class, BasicInterpreterImpl.class)
                 .addBehaviour(Pipeliner.class, BasicPipelinerImpl.class)
                 .addBehaviour(PortStatisticsDiscovery.class, PortStatisticsDiscoveryImpl.class)
-                .addBehaviour(IntProgrammable.class, IntProgrammableImpl.class)
+                .addBehaviour(postProgrammable.class, postProgrammableImpl.class)
                 .addExtension(P4_INFO_TEXT, p4InfoUrl)
                 .addExtension(BMV2_JSON, jsonUrl)
                 .build();
