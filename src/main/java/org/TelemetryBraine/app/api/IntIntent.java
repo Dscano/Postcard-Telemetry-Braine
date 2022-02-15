@@ -17,7 +17,6 @@ package org.TelemetryBraine.app.api;
 
 import com.google.common.annotations.Beta;
 import com.google.common.base.Objects;
-//import org.onosproject.net.behaviour.inbandtelemetry.IntMetadataType;
 import org.TelemetryBraine.app.postcard.IntMetadataType;
 import org.onosproject.net.flow.DefaultTrafficSelector;
 import org.onosproject.net.flow.TrafficSelector;
@@ -201,7 +200,8 @@ public final class IntIntent {
                 Objects.equal(metadataTypes, intIntent.metadataTypes) &&
                 headerType == intIntent.headerType &&
                 Objects.equal(reportTypes, intIntent.reportTypes) &&
-                telemetryMode == intIntent.telemetryMode;
+                telemetryMode == intIntent.telemetryMode &&
+                flowId == intIntent.flowId;
     }
 
     @Override
@@ -252,6 +252,16 @@ public final class IntIntent {
             this.headerType = headerType;
             return this;
         }
+        /**
+         * Assigns a telemetry mode to the IntIntent.
+         *
+         * @param telemetryMode a telemetry mode
+         * @return an IntIntent builder
+         */
+        public Builder withTelemetryMode(TelemetryMode telemetryMode) {
+            this.telemetryMode = telemetryMode;
+            return this;
+        }
 
         /**
          * Add a report type to the IntIntent.
@@ -264,16 +274,6 @@ public final class IntIntent {
             return this;
         }
 
-        /**
-         * Assigns a telemetry mode to the IntIntent.
-         *
-         * @param telemetryMode a telemetry mode
-         * @return an IntIntent builder
-         */
-        public Builder withTelemetryMode(TelemetryMode telemetryMode) {
-            this.telemetryMode = telemetryMode;
-            return this;
-        }
 
         /**
          * Assigns a flow id to the postcard telemetry report.
@@ -294,7 +294,6 @@ public final class IntIntent {
         public IntIntent build() {
             checkNotNull(headerType, "Header type cannot be null.");
             checkArgument(!reportTypes.isEmpty(), "Report types cannot be empty.");
-            checkNotNull(telemetryMode, "Telemetry mode cannot be null.");
 
             return new IntIntent(selector, metadataTypes, headerType, reportTypes, telemetryMode, flowId);
         }

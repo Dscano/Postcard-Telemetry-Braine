@@ -1,19 +1,3 @@
-/*
- * Copyright 2017-present Open Networking Foundation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package org.TelemetryBraine.app.pipeline;
 
 import com.google.common.collect.ImmutableList;
@@ -74,23 +58,6 @@ public final class PipeconfLoader {
     public void deactivate() {
         ALL_PIPECONFS.stream().map(PiPipeconf::id).forEach(piPipeconfService::unregister);
     }
-
-    /*private static PiPipeconf buildBasicPipeconf() {
-        final URL jsonUrl = PipeconfLoader.class.getResource(BASIC_JSON_PATH);
-        final URL p4InfoUrl = PipeconfLoader.class.getResource(BASIC_P4INFO);
-
-        return DefaultPiPipeconf.builder()
-                .withId(BASIC_PIPECONF_ID)
-                .withPipelineModel(parseP4Info(p4InfoUrl))
-                .addBehaviour(PiPipelineInterpreter.class, BasicInterpreterImpl.class)
-                .addBehaviour(Pipeliner.class, BasicPipelinerImpl.class)
-                .addBehaviour(PortStatisticsDiscovery.class, PortStatisticsDiscoveryImpl.class)
-                .addExtension(P4_INFO_TEXT, p4InfoUrl)
-                .addExtension(BMV2_JSON, jsonUrl)
-                // Put here other target-specific extensions,
-                // e.g. Tofino's bin and context.json.
-                .build();
-    }*/
 
     private static PiPipeconf buildIntPipeconf() {
         final URL jsonUrl = PipeconfLoader.class.getResource(INT_JSON_PATH);

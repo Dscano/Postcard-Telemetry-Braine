@@ -1,18 +1,3 @@
-/*
- * Copyright 2018-present Open Networking Foundation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.TelemetryBraine.app.pipeline;
 
 import com.google.common.collect.Sets;
@@ -26,7 +11,6 @@ import org.TelemetryBraine.app.postcard.IntDeviceConfig;
 import org.TelemetryBraine.app.postcard.IntObjective;
 import org.TelemetryBraine.app.postcard.postProgrammable;
 import org.onosproject.net.DeviceId;
-import org.onosproject.net.PortNumber;
 import org.onosproject.net.driver.AbstractHandlerBehaviour;
 import org.onosproject.net.flow.DefaultFlowRule;
 import org.onosproject.net.flow.DefaultTrafficSelector;
@@ -41,8 +25,6 @@ import org.onosproject.net.flow.criteria.IPCriterion;
 import org.onosproject.net.flow.criteria.PiCriterion;
 import org.onosproject.net.flow.criteria.TcpPortCriterion;
 import org.onosproject.net.flow.criteria.UdpPortCriterion;
-import org.onosproject.net.pi.model.PiActionId;
-import org.onosproject.net.pi.model.PiMatchFieldId;
 import org.onosproject.net.pi.model.PiTableId;
 import org.onosproject.net.pi.runtime.PiAction;
 import org.onosproject.net.pi.runtime.PiActionParam;
@@ -58,7 +40,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class postProgrammableImpl extends AbstractHandlerBehaviour implements postProgrammable {
 
     // TODO: change this value to the value of diameter of a network.
-    private static final int MAXHOP = 64;
     private static final int PORTMASK = 0xffff;
     // Application name of the pipeline which adds this implementation to the pipeconf
     private static final String PIPELINE_APP_NAME = "org.TelemetryBraine.app.pipeline";
@@ -72,11 +53,11 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
             Criterion.Type.IP_PROTO);
 
     private static final Set<PiTableId> TABLES_TO_CLEANUP = Sets.newHashSet(
-            IntConstants.INGRESS_PROCESS_ACTIVATE_POSTCARD_TB_POSTCARD_TELEMETRY,
-            IntConstants.INGRESS_PROCESS_INT_SOURCE_SINK_TB_SET_SOURCE,
-            IntConstants.INGRESS_PROCESS_INT_SOURCE_SINK_TB_SET_SINK,
-            IntConstants.EGRESS_PROCESS_POST_META_TB_INT_INSERT,
-            IntConstants.EGRESS_PROCESS_POSTCARD_REPORT_TB_GENERATE_REPORT);
+            PostcardConstants.INGRESS_PROCESS_ACTIVATE_POSTCARD_TB_POSTCARD_TELEMETRY,
+            PostcardConstants.INGRESS_PROCESS_INT_SOURCE_SINK_TB_SET_SOURCE,
+            PostcardConstants.INGRESS_PROCESS_INT_SOURCE_SINK_TB_SET_SINK,
+            PostcardConstants.EGRESS_PROCESS_POST_META_TB_INT_INSERT,
+            PostcardConstants.EGRESS_PROCESS_POSTCARD_REPORT_TB_GENERATE_REPORT);
 
     @Reference(cardinality = ReferenceCardinality.MANDATORY)
     private FlowRuleService flowRuleService;
@@ -96,117 +77,6 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
             log.warn("Application ID is null. Cannot initialize behaviour.");
             return false;
         }
-        return true;
-    }
-
-    @Override
-    public boolean init() {
-        if (!setupBehaviour()) {
-            return false;
-        }
-
-        PiActionParam transitIdParam = new PiActionParam(
-                IntConstants.SWITCH_ID,
-                ImmutableByteSequence.copyFrom(
-                        Integer.parseInt(deviceId.toString().substring(
-                                deviceId.toString().length() - 2))));
-
-        PiActionParam transitIdParam2 = new PiActionParam(
-                IntConstants.FLOW_ID,
-                ImmutableByteSequence.copyFrom(0xc));
-
-        TrafficSelector selector = DefaultTrafficSelector.builder()
-                .matchPi(PiCriterion.builder().matchExact(
-                        IntConstants.HDR_REPORT_IS_VALID, (byte) 0x01)
-                         .build())
-                .build();
-        PiAction transitAction = PiAction.builder()
-                .withId(IntConstants.EGRESS_PROCESS_POST_META_INIT_METADATA)
-                .withParameter(transitIdParam)
-                .withParameter(transitIdParam2)
-                .build();
-        TrafficTreatment treatment = DefaultTrafficTreatment.builder()
-                .piTableAction(transitAction)
-                .build();
-
-        FlowRule transitFlowRule = DefaultFlowRule.builder()
-                .withSelector(selector)
-                .withTreatment(treatment)
-                .fromApp(appId)
-                .withPriority(DEFAULT_PRIORITY)
-                .makePermanent()
-                .forDevice(deviceId)
-                .forTable(IntConstants.EGRESS_PROCESS_POST_META_TB_INT_INSERT)
-                .build();
-
-        flowRuleService.applyFlowRules(transitFlowRule);
-
-        return true;
-    }
-
-
-    @Override
-    public boolean setSourcePort(PortNumber port) {
-        if (!setupBehaviour()) {
-            return false;
-        }
-        log.info("****************************");
-        log.info(port.toString());
-        log.info("****************************");
-        // process_int_source_sink.tb_set_source for each host-facing port
-        PiCriterion ingressCriterion = PiCriterion.builder()
-                .matchExact(IntConstants.HDR_STANDARD_METADATA_INGRESS_PORT, port.toLong())
-                .build();
-        TrafficSelector srcSelector = DefaultTrafficSelector.builder()
-                .matchPi(ingressCriterion)
-                .build();
-        PiAction setSourceAct = PiAction.builder()
-                .withId(IntConstants.INGRESS_PROCESS_INT_SOURCE_SINK_INT_SET_SOURCE)
-                .build();
-        TrafficTreatment srcTreatment = DefaultTrafficTreatment.builder()
-                .piTableAction(setSourceAct)
-                .build();
-        FlowRule srcFlowRule = DefaultFlowRule.builder()
-                .withSelector(srcSelector)
-                .withTreatment(srcTreatment)
-                .fromApp(appId)
-                .withPriority(DEFAULT_PRIORITY)
-                .makePermanent()
-                .forDevice(deviceId)
-                .forTable(IntConstants.INGRESS_PROCESS_INT_SOURCE_SINK_TB_SET_SOURCE)
-                .build();
-        flowRuleService.applyFlowRules(srcFlowRule);
-        return true;
-    }
-
-    @Override
-    public boolean setSinkPort(PortNumber port) {
-        if (!setupBehaviour()) {
-            return false;
-        }
-        // process_set_source_sink.tb_set_sink
-        PiCriterion egressCriterion = PiCriterion.builder()
-                .matchExact(IntConstants.HDR_STANDARD_METADATA_EGRESS_SPEC, port.toLong())
-                .build();
-        TrafficSelector sinkSelector = DefaultTrafficSelector.builder()
-                .matchPi(egressCriterion)
-                .build();
-        PiAction setSinkAct = PiAction.builder()
-                .withId(IntConstants.INGRESS_PROCESS_INT_SOURCE_SINK_INT_SET_SINK)
-                .build();
-        TrafficTreatment sinkTreatment = DefaultTrafficTreatment.builder()
-                .piTableAction(setSinkAct)
-                .build();
-        FlowRule sinkFlowRule = DefaultFlowRule.builder()
-                .withSelector(sinkSelector)
-                .withTreatment(sinkTreatment)
-                .fromApp(appId)
-                .withPriority(DEFAULT_PRIORITY)
-                .makePermanent()
-                .forDevice(deviceId)
-                .forTable(IntConstants.INGRESS_PROCESS_INT_SOURCE_SINK_TB_SET_SINK)
-                .build();
-        flowRuleService.applyFlowRules(sinkFlowRule);
         return true;
     }
 
@@ -242,128 +112,12 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
     @Override
     public boolean supportsFunctionality(IntFunctionality functionality) {
         switch (functionality) {
-            case SOURCE:
-            case SINK:
-            case TRANSIT:
-                return true;
             case POSTCARD:
                 return true;
             default:
                 log.warn("Unknown functionality {}", functionality);
                 return false;
         }
-    }
-
-    private void populateInstTableEntry(PiTableId tableId, PiMatchFieldId matchFieldId,
-                                        int matchValue, PiActionId actionId, ApplicationId appId) {
-        PiCriterion instCriterion = PiCriterion.builder()
-                .matchExact(matchFieldId, matchValue)
-                .build();
-        TrafficSelector instSelector = DefaultTrafficSelector.builder()
-                .matchPi(instCriterion)
-                .build();
-        PiAction instAction = PiAction.builder()
-                .withId(actionId)
-                .build();
-        TrafficTreatment instTreatment = DefaultTrafficTreatment.builder()
-                .piTableAction(instAction)
-                .build();
-
-        FlowRule instFlowRule = DefaultFlowRule.builder()
-                .withSelector(instSelector)
-                .withTreatment(instTreatment)
-                .withPriority(DEFAULT_PRIORITY)
-                .makePermanent()
-                .forDevice(deviceId)
-                .forTable(tableId)
-                .fromApp(appId)
-                .build();
-
-        flowRuleService.applyFlowRules(instFlowRule);
-    }
-
-    private FlowRule buildWatchlistEntry(IntObjective obj) {
-        log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-        log.info(obj.metadataTypes().toString());
-        log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-        int instructionBitmap = buildInstructionBitmap(obj.metadataTypes());
-        PiActionParam hopMetaLenParam = new PiActionParam(
-                IntConstants.HOP_METADATA_LEN,
-                ImmutableByteSequence.copyFrom(Integer.bitCount(instructionBitmap)));
-        PiActionParam hopCntParam = new PiActionParam(
-                IntConstants.REMAINING_HOP_CNT,
-                ImmutableByteSequence.copyFrom(MAXHOP));
-        PiActionParam inst0003Param = new PiActionParam(
-                IntConstants.INS_MASK0003,
-                ImmutableByteSequence.copyFrom((instructionBitmap >> 12) & 0xF));
-        PiActionParam inst0407Param = new PiActionParam(
-                IntConstants.INS_MASK0407,
-                ImmutableByteSequence.copyFrom((instructionBitmap >> 8) & 0xF));
-
-        PiAction intSourceAction = PiAction.builder()
-                .withId(IntConstants.INGRESS_PROCESS_ACTIVATE_POSTCARD_ACTIVATE_POSTCARD)
-                //.withParameter(hopMetaLenParam)
-                //.withParameter(hopCntParam)
-                //.withParameter(inst0003Param)
-                //.withParameter(inst0407Param)
-                .build();
-
-        TrafficTreatment instTreatment = DefaultTrafficTreatment.builder()
-                .piTableAction(intSourceAction)
-                .build();
-
-        TrafficSelector.Builder sBuilder = DefaultTrafficSelector.builder();
-        for (Criterion criterion : obj.selector().criteria()) {
-            switch (criterion.type()) {
-                case IPV4_SRC:
-                    sBuilder.matchIPSrc(((IPCriterion) criterion).ip());
-                    break;
-                case IPV4_DST:
-                    sBuilder.matchIPDst(((IPCriterion) criterion).ip());
-                    break;
-                case TCP_SRC:
-                    sBuilder.matchPi(
-                            PiCriterion.builder().matchTernary(
-                                    IntConstants.HDR_LOCAL_METADATA_L4_SRC_PORT,
-                                    ((TcpPortCriterion) criterion).tcpPort().toInt(), PORTMASK)
-                                    .build());
-                    break;
-                case UDP_SRC:
-                    sBuilder.matchPi(
-                            PiCriterion.builder().matchTernary(
-                                    IntConstants.HDR_LOCAL_METADATA_L4_SRC_PORT,
-                                    ((UdpPortCriterion) criterion).udpPort().toInt(), PORTMASK)
-                                    .build());
-                    break;
-                case TCP_DST:
-                    sBuilder.matchPi(
-                            PiCriterion.builder().matchTernary(
-                                    IntConstants.HDR_LOCAL_METADATA_L4_DST_PORT,
-                                    ((TcpPortCriterion) criterion).tcpPort().toInt(), PORTMASK)
-                                    .build());
-                    break;
-                case UDP_DST:
-                    sBuilder.matchPi(
-                            PiCriterion.builder().matchTernary(
-                                    IntConstants.HDR_LOCAL_METADATA_L4_DST_PORT,
-                                    ((UdpPortCriterion) criterion).udpPort().toInt(), PORTMASK)
-                                    .build());
-                    break;
-                default:
-                    log.warn("Unsupported criterion type: {}", criterion.type());
-            }
-        }
-
-        return DefaultFlowRule.builder()
-                .forDevice(this.data().deviceId())
-                .withSelector(sBuilder.build())
-                .withTreatment(instTreatment)
-                .withPriority(DEFAULT_PRIORITY)
-                .forTable(IntConstants.INGRESS_PROCESS_ACTIVATE_POSTCARD_TB_POSTCARD_TELEMETRY)
-                .fromApp(appId)
-                .makePermanent()
-                //.withIdleTimeout(IDLE_TIMEOUT)
-                .build();
     }
 
     private Set<FlowRule> buildWatchlistEntries(IntObjective obj) {
@@ -377,30 +131,30 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
 
         TrafficSelector selector = DefaultTrafficSelector.builder()
                 .matchPi(PiCriterion.builder().matchExact(
-                        IntConstants.HDR_REPORT_IS_VALID, (byte) 0x01)
+                        PostcardConstants.HDR_REPORT_IS_VALID, (byte) 0x01)
                         .build())
                 .build();
 
         PiActionParam transitSwitchId = new PiActionParam(
-                IntConstants.SWITCH_ID,
+                PostcardConstants.SWITCH_ID,
                 ImmutableByteSequence.copyFrom(
                         Integer.parseInt(deviceId.toString().substring(
                                 deviceId.toString().length() - 2))));
 
         PiActionParam transitFlowId = new PiActionParam(
-                IntConstants.FLOW_ID,
+                PostcardConstants.FLOW_ID,
                 ImmutableByteSequence.copyFrom(obj.flowIf()));
 
         PiActionParam inst0003Param = new PiActionParam(
-                IntConstants.INS_MASK0003,
+                PostcardConstants.INS_MASK0003,
                 ImmutableByteSequence.copyFrom((instructionBitmap >> 12) & 0xF));
 
         PiActionParam inst0407Param = new PiActionParam(
-                IntConstants.INS_MASK0407,
+                PostcardConstants.INS_MASK0407,
                 ImmutableByteSequence.copyFrom((instructionBitmap >> 8) & 0xF));
 
         PiAction transitAction = PiAction.builder()
-                .withId(IntConstants.EGRESS_PROCESS_POST_META_INIT_METADATA)
+                .withId(PostcardConstants.EGRESS_PROCESS_POST_META_INIT_METADATA)
                 .withParameter(transitSwitchId)
                 .withParameter(transitFlowId)
                 .withParameter(inst0003Param)
@@ -418,7 +172,7 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
                 .withPriority(DEFAULT_PRIORITY)
                 .makePermanent()
                 .forDevice(deviceId)
-                .forTable(IntConstants.EGRESS_PROCESS_POST_META_TB_INT_INSERT)
+                .forTable(PostcardConstants.EGRESS_PROCESS_POST_META_TB_INT_INSERT)
                 .build());
 
 
@@ -437,7 +191,7 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
                 ImmutableByteSequence.copyFrom((instructionBitmap >> 8) & 0xF));*/
 
         PiAction intSourceAction = PiAction.builder()
-                .withId(IntConstants.INGRESS_PROCESS_ACTIVATE_POSTCARD_ACTIVATE_POSTCARD)
+                .withId(PostcardConstants.INGRESS_PROCESS_ACTIVATE_POSTCARD_ACTIVATE_POSTCARD)
                 .build();
 
         TrafficTreatment instTreatment = DefaultTrafficTreatment.builder()
@@ -456,28 +210,28 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
                 case TCP_SRC:
                     sBuilder.matchPi(
                             PiCriterion.builder().matchTernary(
-                                    IntConstants.HDR_LOCAL_METADATA_L4_SRC_PORT,
+                                    PostcardConstants.HDR_LOCAL_METADATA_L4_SRC_PORT,
                                     ((TcpPortCriterion) criterion).tcpPort().toInt(), PORTMASK)
                                     .build());
                     break;
                 case UDP_SRC:
                     sBuilder.matchPi(
                             PiCriterion.builder().matchTernary(
-                                    IntConstants.HDR_LOCAL_METADATA_L4_SRC_PORT,
+                                    PostcardConstants.HDR_LOCAL_METADATA_L4_SRC_PORT,
                                     ((UdpPortCriterion) criterion).udpPort().toInt(), PORTMASK)
                                     .build());
                     break;
                 case TCP_DST:
                     sBuilder.matchPi(
                             PiCriterion.builder().matchTernary(
-                                    IntConstants.HDR_LOCAL_METADATA_L4_DST_PORT,
+                                    PostcardConstants.HDR_LOCAL_METADATA_L4_DST_PORT,
                                     ((TcpPortCriterion) criterion).tcpPort().toInt(), PORTMASK)
                                     .build());
                     break;
                 case UDP_DST:
                     sBuilder.matchPi(
                             PiCriterion.builder().matchTernary(
-                                    IntConstants.HDR_LOCAL_METADATA_L4_DST_PORT,
+                                    PostcardConstants.HDR_LOCAL_METADATA_L4_DST_PORT,
                                     ((UdpPortCriterion) criterion).udpPort().toInt(), PORTMASK)
                                     .build());
                     break;
@@ -492,7 +246,7 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
                     .withSelector(sBuilder.build())
                     .withTreatment(instTreatment)
                     .withPriority(DEFAULT_PRIORITY)
-                    .forTable(IntConstants.INGRESS_PROCESS_ACTIVATE_POSTCARD_TB_POSTCARD_TELEMETRY)
+                    .forTable(PostcardConstants.INGRESS_PROCESS_ACTIVATE_POSTCARD_TB_POSTCARD_TELEMETRY)
                     .fromApp(appId)
                     .makePermanent()
                     .build()
@@ -560,8 +314,6 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
                      deviceId, unsupportedSelectors(obj.selector()));
             return false;
         }
-
-        //FlowRule flowRule = buildWatchlistEntry(obj);
         Set<FlowRule> flowRules = buildWatchlistEntries(obj);
         if (flowRules != null) {
             if (install) {
@@ -581,20 +333,6 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
                     install ? "install" : "remove", obj, deviceId);
             return false;
         }
-        /*if (flowRule != null) {
-            if (install) {
-                flowRuleService.applyFlowRules(flowRule);
-            } else {
-                flowRuleService.removeFlowRules(flowRule);
-            }
-            log.debug("IntObjective {} has been {} {}",
-                      obj, install ? "installed to" : "removed from", deviceId);
-            return true;
-        } else {
-            log.warn("Failed to {} IntObjective {} on {}",
-                     install ? "install" : "remove", obj, deviceId);
-            return false;
-        }*/
     }
 
     private boolean setupIntReportInternal(IntDeviceConfig cfg) {
@@ -616,26 +354,26 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
     private FlowRule buildReportEntry(IntDeviceConfig cfg) {
         TrafficSelector selector = DefaultTrafficSelector.builder()
                 .matchPi(PiCriterion.builder().matchExact(
-                         IntConstants.HDR_REPORT_IS_VALID, (byte) 0x01)
+                         PostcardConstants.HDR_REPORT_IS_VALID, (byte) 0x01)
                                  .build())
                 .build();
         PiActionParam srcMacParam = new PiActionParam(
-                IntConstants.SRC_MAC,
+                PostcardConstants.SRC_MAC,
                 ImmutableByteSequence.copyFrom(cfg.sinkMac().toBytes()));
         PiActionParam nextHopMacParam = new PiActionParam(
-                IntConstants.MON_MAC,
+                PostcardConstants.MON_MAC,
                 ImmutableByteSequence.copyFrom(cfg.collectorNextHopMac().toBytes()));
         PiActionParam srcIpParam = new PiActionParam(
-                IntConstants.SRC_IP,
+                PostcardConstants.SRC_IP,
                 ImmutableByteSequence.copyFrom(cfg.sinkIp().toOctets()));
         PiActionParam monIpParam = new PiActionParam(
-                IntConstants.MON_IP,
+                PostcardConstants.MON_IP,
                 ImmutableByteSequence.copyFrom(cfg.collectorIp().toOctets()));
         PiActionParam monPortParam = new PiActionParam(
-                IntConstants.MON_PORT,
+                PostcardConstants.MON_PORT,
                 ImmutableByteSequence.copyFrom(cfg.collectorPort().toInt()));
         PiAction reportAction = PiAction.builder()
-                .withId(IntConstants.EGRESS_PROCESS_POSTCARD_REPORT_DO_REPORT_ENCAPSULATION)
+                .withId(PostcardConstants.EGRESS_PROCESS_POSTCARD_REPORT_DO_REPORT_ENCAPSULATION)
                 .withParameter(srcMacParam)
                 .withParameter(nextHopMacParam)
                 .withParameter(srcIpParam)
@@ -653,7 +391,7 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
                 .withPriority(DEFAULT_PRIORITY)
                 .makePermanent()
                 .forDevice(this.data().deviceId())
-                .forTable(IntConstants.EGRESS_PROCESS_POSTCARD_REPORT_TB_GENERATE_REPORT)
+                .forTable(PostcardConstants.EGRESS_PROCESS_POSTCARD_REPORT_TB_GENERATE_REPORT)
                 .build();
     }
 

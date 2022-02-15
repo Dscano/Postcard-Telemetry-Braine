@@ -15,7 +15,7 @@
  */
 package org.TelemetryBraine.app;
 
-import org.TelemetryBraine.app.impl.SimpleIntManager;
+import org.TelemetryBraine.app.impl.SimplePostcardManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,9 +23,9 @@ import org.junit.Test;
 /**
  * Set of tests of the ONOS application component.
  */
-public class SimpleIntManagerTest {
+public class SimplePostcardManagerTest {
 
-    private SimpleIntManager component;
+    private SimplePostcardManager component;
 
     @Before
     public void setUp() {
