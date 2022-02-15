@@ -1,0 +1,29 @@
+{
+    "devices": {
+        "device:bmv2:s01": {
+            "ports": {
+                "1": {
+                    "name": "s01-eth1", 
+                    "speed": 10000, 
+                    "enabled": true, 
+                    "number": 1, 
+                    "removed": false, 
+                    "type": "copper"
+                }, 
+                "2": {
+                    "name": "s01-eth2", 
+                    "speed": 10000, 
+                    "enabled": true, 
+                    "number": 2, 
+                    "removed": false, 
+                    "type": "copper"
+                }
+            }, 
+            "basic": {
+                "managementAddress": "grpc://127.0.0.1:50001?device_id=1", 
+                "driver": "bmv2", 
+                "pipeconf": "org.TelemetryBraine.app.pipeline"
+            }
+        }
+    }
+}

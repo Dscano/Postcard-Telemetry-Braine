@@ -1,0 +1,25 @@
+{
+  "postcardtelemetry":[
+    {
+      "selector": {
+        "criteria": [
+          { "type": "IPV4_SRC",
+            "ip": "10.0.0.1/32"
+          },
+          { "type": "IPV4_DST",
+            "ip": "10.0.0.2/32"
+          },
+          {
+            "type": "UDP_DST",
+            "udpPort": 5001
+          }
+        ]
+      },
+      "headerType": "HOP_BY_HOP",
+      "telemetryMode": "POSTCARD",
+      "metadataTypes": [ "SWITCH_ID","HOP_LATENCY"],
+      "reportTypes": "TRACKED_FLOW",
+      "flowId": 10110
+      }
+  ]
+}

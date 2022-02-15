@@ -1,0 +1,10 @@
+{
+  "apps": {
+    "org.TelemetryBraine.app": {
+      "report": {
+        "collectorIp": "127.0.0.1",
+        "collectorPort": "54321"
+      }
+    }
+  }
+}
