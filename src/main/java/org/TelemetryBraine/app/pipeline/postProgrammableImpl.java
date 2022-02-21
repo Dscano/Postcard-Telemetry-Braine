@@ -123,10 +123,6 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
     private Set<FlowRule> buildWatchlistEntries(IntObjective obj) {
         Set<FlowRule> flowRules = new HashSet<>();
 
-        log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-        log.info(obj.metadataTypes().toString());
-        log.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-
         int instructionBitmap = buildInstructionBitmap(obj.metadataTypes());
 
         TrafficSelector selector = DefaultTrafficSelector.builder()
@@ -174,21 +170,6 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
                 .forDevice(deviceId)
                 .forTable(PostcardConstants.EGRESS_PROCESS_POST_META_TB_INT_INSERT)
                 .build());
-
-
-        /*int instructionBitmap = buildInstructionBitmap(obj.metadataTypes());
-        PiActionParam hopMetaLenParam = new PiActionParam(
-                IntConstants.HOP_METADATA_LEN,
-                ImmutableByteSequence.copyFrom(Integer.bitCount(instructionBitmap)));
-        PiActionParam hopCntParam = new PiActionParam(
-                IntConstants.REMAINING_HOP_CNT,
-                ImmutableByteSequence.copyFrom(MAXHOP));
-        PiActionParam inst0003Param = new PiActionParam(
-                IntConstants.INS_MASK0003,
-                ImmutableByteSequence.copyFrom((instructionBitmap >> 12) & 0xF));
-        PiActionParam inst0407Param = new PiActionParam(
-                IntConstants.INS_MASK0407,
-                ImmutableByteSequence.copyFrom((instructionBitmap >> 8) & 0xF));*/
 
         PiAction intSourceAction = PiAction.builder()
                 .withId(PostcardConstants.INGRESS_PROCESS_ACTIVATE_POSTCARD_ACTIVATE_POSTCARD)

@@ -50,28 +50,13 @@ import java.util.Optional;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
+import static org.TelemetryBraine.app.pipeline.BasicConstants.*;
 import static org.onlab.util.ImmutableByteSequence.copyFrom;
 import static org.onosproject.net.PortNumber.CONTROLLER;
 import static org.onosproject.net.PortNumber.FLOOD;
 import static org.onosproject.net.flow.instructions.Instruction.Type.OUTPUT;
 import static org.onosproject.net.flow.instructions.Instructions.OutputInstruction;
 import static org.onosproject.net.pi.model.PiPacketOperationType.PACKET_OUT;
-import static org.TelemetryBraine.app.pipeline.BasicConstants.EGRESS_PORT;
-import static org.TelemetryBraine.app.pipeline.BasicConstants.HDR_HDR_ETHERNET_DST_ADDR;
-import static org.TelemetryBraine.app.pipeline.BasicConstants.HDR_HDR_ETHERNET_ETHER_TYPE;
-import static org.TelemetryBraine.app.pipeline.BasicConstants.HDR_HDR_ETHERNET_SRC_ADDR;
-import static org.TelemetryBraine.app.pipeline.BasicConstants.HDR_HDR_IPV4_DST_ADDR;
-import static org.TelemetryBraine.app.pipeline.BasicConstants.HDR_HDR_IPV4_SRC_ADDR;
-import static org.TelemetryBraine.app.pipeline.BasicConstants.HDR_STANDARD_METADATA_INGRESS_PORT;
-import static org.TelemetryBraine.app.pipeline.BasicConstants.INGRESS_PORT;
-import static org.TelemetryBraine.app.pipeline.BasicConstants.INGRESS_TABLE0_CONTROL_DROP;
-import static org.TelemetryBraine.app.pipeline.BasicConstants.INGRESS_TABLE0_CONTROL_SEND_TO_CPU;
-import static org.TelemetryBraine.app.pipeline.BasicConstants.INGRESS_TABLE0_CONTROL_SET_EGRESS_PORT;
-import static org.TelemetryBraine.app.pipeline.BasicConstants.INGRESS_TABLE0_CONTROL_TABLE0;
-import static org.TelemetryBraine.app.pipeline.BasicConstants.INGRESS_WCMP_CONTROL_SET_EGRESS_PORT;
-import static org.TelemetryBraine.app.pipeline.BasicConstants.INGRESS_WCMP_CONTROL_WCMP_TABLE;
-import static org.TelemetryBraine.app.pipeline.BasicConstants.NO_ACTION;
-import static org.TelemetryBraine.app.pipeline.BasicConstants.PORT;
 
 /**
  * Interpreter implementation for basic.p4.
@@ -93,6 +78,11 @@ public class BasicInterpreterImpl extends AbstractHandlerBehaviour
                     .put(Criterion.Type.ETH_TYPE, HDR_HDR_ETHERNET_ETHER_TYPE)
                     .put(Criterion.Type.IPV4_SRC, HDR_HDR_IPV4_SRC_ADDR)
                     .put(Criterion.Type.IPV4_DST, HDR_HDR_IPV4_DST_ADDR)
+                    .put(Criterion.Type.IP_PROTO, HDR_HDR_IPV4_PROTOCOL)
+                    .put(Criterion.Type.UDP_SRC, HDR_LOCAL_METADATA_L4_SRC_PORT)
+                    .put(Criterion.Type.UDP_DST, HDR_LOCAL_METADATA_L4_DST_PORT )
+                    .put(Criterion.Type.TCP_SRC, HDR_LOCAL_METADATA_L4_SRC_PORT)
+                    .put(Criterion.Type.TCP_DST, HDR_LOCAL_METADATA_L4_DST_PORT )
                     .build();
 
     @Override
