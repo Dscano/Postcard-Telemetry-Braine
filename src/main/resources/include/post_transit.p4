@@ -23,13 +23,14 @@ control process_post_meta (
         // workaround to ONOS inability to properly support default actions.
         key = {
             IS_I2E_CLONE(standard_metadata) : exact @name("report_is_valid");
+            hdr.ipv4.src_addr: ternary;
+            hdr.ipv4.dst_addr: ternary;
         }
         actions = {
             init_metadata;
             @defaultonly nop;
         }
         const default_action = nop();
-        size = 1;
     }
 
     apply {

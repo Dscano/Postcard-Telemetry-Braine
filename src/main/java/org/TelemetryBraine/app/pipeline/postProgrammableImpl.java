@@ -125,11 +125,30 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
 
         int instructionBitmap = buildInstructionBitmap(obj.metadataTypes());
 
-        TrafficSelector selector = DefaultTrafficSelector.builder()
+        /*TrafficSelector selector = DefaultTrafficSelector.builder()
                 .matchPi(PiCriterion.builder().matchExact(
                         PostcardConstants.HDR_REPORT_IS_VALID, (byte) 0x01)
                         .build())
-                .build();
+                .build();*/
+
+        TrafficSelector.Builder selector = DefaultTrafficSelector.builder();
+
+        for (Criterion criterion : obj.selector().criteria()) {
+            switch (criterion.type()) {
+                case IPV4_SRC:
+                    selector.matchIPSrc(((IPCriterion) criterion).ip());
+                    break;
+                case IPV4_DST:
+                    selector.matchIPDst(((IPCriterion) criterion).ip());
+                    break;
+                default:
+                    log.warn("Unsupported criterion type: {}", criterion.type());
+            }
+        }
+
+        selector.matchPi(PiCriterion.builder().matchExact(
+                PostcardConstants.HDR_REPORT_IS_VALID, (byte) 0x01)
+                .build());
 
         PiActionParam transitSwitchId = new PiActionParam(
                 PostcardConstants.SWITCH_ID,
@@ -162,7 +181,7 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
                 .build();
 
         flowRules.add(DefaultFlowRule.builder()
-                .withSelector(selector)
+                .withSelector(selector.build())
                 .withTreatment(treatment)
                 .fromApp(appId)
                 .withPriority(DEFAULT_PRIORITY)
