@@ -22,6 +22,7 @@
 #define IP_PROTO_UDP 8w17
 #define IP_VERSION_4 4w4
 #define IPV4_IHL_MIN 4w5
+#define VXLAN_UDP_PORT 16w8472
 #define MAX_PORTS 511
 
 #ifndef _BOOL

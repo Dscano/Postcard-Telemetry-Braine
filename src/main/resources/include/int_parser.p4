@@ -37,6 +37,8 @@ parser int_parser (
 
     state parse_ethernet {
         packet.extract(hdr.ethernet);
+        local_metadata.l2_src_add = hdr.ethernet.src_addr;
+        local_metadata.l2_dst_add = hdr.ethernet.dst_addr;
         transition select(hdr.ethernet.ether_type) {
             ETH_TYPE_IPV4 : parse_ipv4;
             default : accept;
@@ -45,6 +47,8 @@ parser int_parser (
 
     state parse_ipv4 {
         packet.extract(hdr.ipv4);
+        local_metadata.l3_src_add = hdr.ipv4.src_addr;
+        local_metadata.l3_dst_add = hdr.ipv4.dst_addr;
         transition select(hdr.ipv4.protocol) {
             IP_PROTO_TCP : parse_tcp;
             IP_PROTO_UDP : parse_udp;
@@ -57,39 +61,54 @@ parser int_parser (
         local_metadata.l4_src_port = hdr.tcp.src_port;
         local_metadata.l4_dst_port = hdr.tcp.dst_port;
         transition accept;
-        /*transition select(hdr.ipv4.dscp) {
-            DSCP_INT &&& DSCP_MASK: parse_intl4_shim;
-            default: accept;
-        }*/
     }
 
     state parse_udp {
         packet.extract(hdr.udp);
         local_metadata.l4_src_port = hdr.udp.src_port;
         local_metadata.l4_dst_port = hdr.udp.dst_port;
-        transition accept;
-        /*transition select(hdr.ipv4.dscp) {
-            DSCP_INT &&& DSCP_MASK: parse_intl4_shim;
+        transition select(hdr.udp.dst_port) {
+            VXLAN_UDP_PORT: parse_vxlan;
             default: accept;
-        }*/
+        }
     }
 
-    /*state parse_intl4_shim {
-        packet.extract(hdr.intl4_shim);
-        local_metadata.int_meta.intl4_shim_len = hdr.intl4_shim.len;
-        transition parse_int_header;
+    state parse_vxlan {
+        packet.extract(hdr.vxlan);
+        transition parse_ethernet_inner;
     }
 
-    state parse_int_header {
-        packet.extract(hdr.int_header);
-        transition parse_int_data;
+    state parse_ethernet_inner {
+        packet.extract(hdr.ethernet_inner);
+        local_metadata.l2_src_add = hdr.ethernet_inner.src_addr;
+        local_metadata.l2_dst_add = hdr.ethernet_inner.dst_addr;
+        transition select(hdr.ethernet_inner.ether_type) {
+            ETH_TYPE_IPV4 : parse_ipv4_inner;
+            default : accept;
+        }
     }
 
-    state parse_int_data {
-        // Parse INT metadata stack
-        packet.extract(hdr.int_data, ((bit<32>) (local_metadata.int_meta.intl4_shim_len - INT_HEADER_LEN_WORD)) << 5);
+    state parse_ipv4_inner{
+        packet.extract(hdr.ipv4_inner);
+        local_metadata.l3_src_add = hdr.ipv4_inner.src_addr;
+        local_metadata.l3_dst_add = hdr.ipv4_inner.dst_addr;
+        transition select(hdr.ipv4_inner.protocol) {
+            IP_PROTO_TCP : parse_tcp_inner;
+            IP_PROTO_UDP : parse_udp_inner;
+            default: accept;
+        }
+    }
+
+    state parse_tcp_inner {
+        packet.extract(hdr.tcp_inner);
         transition accept;
-    }*/
+    }
+
+    state parse_udp_inner {
+        packet.extract(hdr.udp_inner);
+        transition accept;
+        }
+
 }
 
 control int_deparser(
@@ -105,17 +124,11 @@ control int_deparser(
         packet.emit(hdr.ipv4);
         packet.emit(hdr.tcp);
         packet.emit(hdr.udp);
-        /*packet.emit(hdr.intl4_shim);
-        packet.emit(hdr.int_header);
-        packet.emit(hdr.int_switch_id);
-        packet.emit(hdr.int_level1_port_ids);
-        packet.emit(hdr.int_hop_latency);
-        packet.emit(hdr.int_q_occupancy);
-        packet.emit(hdr.int_ingress_tstamp);
-        packet.emit(hdr.int_egress_tstamp);
-        packet.emit(hdr.int_level2_port_ids);
-        packet.emit(hdr.int_egress_tx_util);
-        packet.emit(hdr.int_data);*/
+        packet.emit(hdr.vxlan);
+        packet.emit(hdr.ethernet_inner);
+        packet.emit(hdr.ipv4_inner);
+        packet.emit(hdr.udp_inner);
+        packet.emit(hdr.tcp_inner);
     }
 }
 

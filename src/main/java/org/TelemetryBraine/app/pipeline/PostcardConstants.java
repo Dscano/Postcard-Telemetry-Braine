@@ -39,6 +39,10 @@ public final class PostcardConstants {
             PiMatchFieldId.of("local_metadata.l4_dst_port");
     public static final PiMatchFieldId HDR_LOCAL_METADATA_L4_SRC_PORT =
             PiMatchFieldId.of("local_metadata.l4_src_port");
+    public static final PiMatchFieldId HDR_LOCAL_METADATA_L3_DST_ADDR =
+            PiMatchFieldId.of("local_metadata.l3_dst_add");
+    public static final PiMatchFieldId HDR_LOCAL_METADATA_L3_SRC_ADDR =
+            PiMatchFieldId.of("local_metadata.l3_src_add");
     public static final PiMatchFieldId HDR_STANDARD_METADATA_INGRESS_PORT =
             PiMatchFieldId.of("standard_metadata.ingress_port");
     public static final PiMatchFieldId HDR_REPORT_IS_VALID =

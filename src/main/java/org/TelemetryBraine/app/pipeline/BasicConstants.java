@@ -37,24 +37,24 @@ public final class BasicConstants {
     // Header field IDs
     public static final PiMatchFieldId HDR_HDR_IPV4_PROTOCOL =
             PiMatchFieldId.of("hdr.ipv4.protocol");
-    public static final PiMatchFieldId HDR_HDR_IPV4_SRC_ADDR =
-            PiMatchFieldId.of("hdr.ipv4.src_addr");
     public static final PiMatchFieldId HDR_HDR_ETHERNET_ETHER_TYPE =
             PiMatchFieldId.of("hdr.ethernet.ether_type");
-    public static final PiMatchFieldId HDR_HDR_ETHERNET_SRC_ADDR =
-            PiMatchFieldId.of("hdr.ethernet.src_addr");
     public static final PiMatchFieldId HDR_LOCAL_METADATA_L4_DST_PORT =
             PiMatchFieldId.of("local_metadata.l4_dst_port");
     public static final PiMatchFieldId HDR_LOCAL_METADATA_L4_SRC_PORT =
             PiMatchFieldId.of("local_metadata.l4_src_port");
+    public static final PiMatchFieldId HDR_LOCAL_METADATA_L3_DST_ADDR =
+            PiMatchFieldId.of("local_metadata.l3_dst_add");
+    public static final PiMatchFieldId HDR_LOCAL_METADATA_L3_SRC_ADDR =
+            PiMatchFieldId.of("local_metadata.l3_src_add");
+    public static final PiMatchFieldId HDR_LOCAL_METADATA_L2_DST_ADDR =
+            PiMatchFieldId.of("local_metadata.l2_dst_add");
+    public static final PiMatchFieldId HDR_LOCAL_METADATA_L2_SRC_ADDR =
+            PiMatchFieldId.of("local_metadata.l2_src_add");
     public static final PiMatchFieldId HDR_STANDARD_METADATA_INGRESS_PORT =
             PiMatchFieldId.of("standard_metadata.ingress_port");
-    public static final PiMatchFieldId HDR_HDR_IPV4_DST_ADDR =
-            PiMatchFieldId.of("hdr.ipv4.dst_addr");
-    public static final PiMatchFieldId HDR_LOCAL_METADATA_NEXT_HOP_ID =
-            PiMatchFieldId.of("local_metadata.next_hop_id");
-    public static final PiMatchFieldId HDR_HDR_ETHERNET_DST_ADDR =
-            PiMatchFieldId.of("hdr.ethernet.dst_addr");
+;
+
     // Table IDs
     public static final PiTableId INGRESS_WCMP_CONTROL_WCMP_TABLE =
             PiTableId.of("ingress.wcmp_control.wcmp_table");

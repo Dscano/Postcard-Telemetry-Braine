@@ -1,7 +1,12 @@
 package org.TelemetryBraine.app.pipeline;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.TelemetryBraine.app.postcard.IntMetadataType;
+import org.onlab.packet.Ip4Address;
+import org.onosproject.net.Device;
+import org.onosproject.net.pi.model.PiMatchFieldId;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.onlab.util.ImmutableByteSequence;
@@ -31,10 +36,15 @@ import org.onosproject.net.pi.runtime.PiActionParam;
 import org.slf4j.Logger;
 
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import static org.TelemetryBraine.app.pipeline.BasicConstants.*;
+import static org.onosproject.net.flow.criteria.Criterion.Type.IPV4_DST;
+import static org.onosproject.net.flow.criteria.Criterion.Type.PROTOCOL_INDEPENDENT;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class postProgrammableImpl extends AbstractHandlerBehaviour implements postProgrammable {
@@ -59,6 +69,21 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
             PostcardConstants.EGRESS_PROCESS_POST_META_TB_INT_INSERT,
             PostcardConstants.EGRESS_PROCESS_POSTCARD_REPORT_TB_GENERATE_REPORT);
 
+    private static final Map<Criterion.Type, PiMatchFieldId> CRITERION_MAP =
+            new ImmutableMap.Builder<Criterion.Type, PiMatchFieldId>()
+                    .put(Criterion.Type.IN_PORT, HDR_STANDARD_METADATA_INGRESS_PORT)
+                    .put(Criterion.Type.ETH_DST, HDR_LOCAL_METADATA_L2_DST_ADDR)
+                    .put(Criterion.Type.ETH_SRC, HDR_LOCAL_METADATA_L2_SRC_ADDR)
+                    .put(Criterion.Type.ETH_TYPE, HDR_HDR_ETHERNET_ETHER_TYPE)
+                    .put(Criterion.Type.IPV4_SRC, HDR_LOCAL_METADATA_L3_SRC_ADDR)
+                    .put(Criterion.Type.IPV4_DST, HDR_LOCAL_METADATA_L3_DST_ADDR)
+                    .put(Criterion.Type.IP_PROTO, HDR_HDR_IPV4_PROTOCOL)
+                    .put(Criterion.Type.UDP_SRC, HDR_LOCAL_METADATA_L4_SRC_PORT)
+                    .put(Criterion.Type.UDP_DST, HDR_LOCAL_METADATA_L4_DST_PORT )
+                    .put(Criterion.Type.TCP_SRC, HDR_LOCAL_METADATA_L4_SRC_PORT)
+                    .put(Criterion.Type.TCP_DST, HDR_LOCAL_METADATA_L4_DST_PORT )
+                    .build();
+
     @Reference(cardinality = ReferenceCardinality.MANDATORY)
     private FlowRuleService flowRuleService;
 
@@ -78,6 +103,11 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
             return false;
         }
         return true;
+    }
+
+    @Override
+    public Optional<PiMatchFieldId> mapCriterionType(Criterion.Type type) {
+        return Optional.ofNullable(CRITERION_MAP.get(type));
     }
 
     @Override
@@ -124,12 +154,6 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
         Set<FlowRule> flowRules = new HashSet<>();
 
         int instructionBitmap = buildInstructionBitmap(obj.metadataTypes());
-
-        /*TrafficSelector selector = DefaultTrafficSelector.builder()
-                .matchPi(PiCriterion.builder().matchExact(
-                        PostcardConstants.HDR_REPORT_IS_VALID, (byte) 0x01)
-                        .build())
-                .build();*/
 
         TrafficSelector.Builder selector = DefaultTrafficSelector.builder();
 
@@ -199,6 +223,7 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
                 .build();
 
         TrafficSelector.Builder sBuilder = DefaultTrafficSelector.builder();
+
         for (Criterion criterion : obj.selector().criteria()) {
             switch (criterion.type()) {
                 case IPV4_SRC:
@@ -255,13 +280,10 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
         return flowRules;
     }
 
-    private int buildInstructionBitmap(Set<IntMetadataType> metadataTypes) {
+    private int buildInstructionBitmap(Set<IntMetadataType> metadataTypes){
         int instBitmap = 0;
         for (IntMetadataType metadataType : metadataTypes) {
             switch (metadataType) {
-                /*case SWITCH_ID:
-                    instBitmap |= (1 << 15);
-                    break;*/
                 case L1_PORT_ID:
                     instBitmap |= (1 << 14);
                     break;
@@ -333,6 +355,32 @@ public class postProgrammableImpl extends AbstractHandlerBehaviour implements po
                     install ? "install" : "remove", obj, deviceId);
             return false;
         }
+    }
+
+    @Override
+    public void initController(DeviceId deviceId){
+
+        TrafficSelector.Builder selector = DefaultTrafficSelector.builder();
+        selector.matchPi(
+                PiCriterion.builder().matchTernary(
+                        PostcardConstants.HDR_LOCAL_METADATA_L4_DST_PORT,8472
+                        , PORTMASK).build());
+
+        TrafficTreatment treatment = DefaultTrafficTreatment.builder()
+                .piTableAction(PiAction.builder().withId(INGRESS_TABLE0_CONTROL_SEND_TO_CPU).build())
+                .build();
+
+        FlowRule.Builder ruleBuilder = DefaultFlowRule.builder()
+                .forTable(INGRESS_TABLE0_CONTROL_TABLE0)
+                .forDevice(deviceId)
+                .withSelector(selector.build())
+                .fromApp(appId)
+                .withPriority(5)
+                .withTreatment(treatment)
+                .makePermanent();
+
+        flowRuleService.applyFlowRules(ruleBuilder.build());
+
     }
 
     private boolean setupIntReportInternal(IntDeviceConfig cfg) {

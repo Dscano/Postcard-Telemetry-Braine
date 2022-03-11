@@ -26,6 +26,14 @@ control ingress (
         port_counters_ingress.apply(hdr, standard_metadata);
         packetio_ingress.apply(hdr, standard_metadata);
         table0_control.apply(hdr, local_metadata, standard_metadata);
+            if( hdr.udp_inner.isValid()){
+                local_metadata.l4_src_port = hdr.udp_inner.src_port;
+                local_metadata.l4_dst_port = hdr.udp_inner.dst_port;
+            }
+            if( hdr.tcp_inner.isValid()){
+                local_metadata.l4_src_port = hdr.tcp_inner.src_port;
+                local_metadata.l4_dst_port = hdr.tcp_inner.dst_port;
+            }
         process_activate_postcard.apply(hdr, local_metadata, standard_metadata);
 
         if (local_metadata.postcard_meta.activate_postcard == _TRUE) {
@@ -43,7 +51,18 @@ control egress (
     inout standard_metadata_t standard_metadata) {
 
     apply {
-        
+            if( hdr.udp_inner.isValid()){
+                local_metadata.l3_src_add = hdr.ipv4_inner.src_addr;
+                local_metadata.l3_dst_add = hdr.ipv4_inner.dst_addr;
+            }
+            if( hdr.udp_inner.isValid()){
+                local_metadata.l4_src_port = hdr.udp_inner.src_port;
+                local_metadata.l4_dst_port = hdr.udp_inner.dst_port;
+            }
+            if( hdr.tcp_inner.isValid()){
+                local_metadata.l4_src_port = hdr.tcp_inner.src_port;
+                local_metadata.l4_dst_port = hdr.tcp_inner.dst_port;
+            }
             #ifdef TARGET_BMV2
             if (IS_I2E_CLONE(standard_metadata)) {
                 /* send postcard report */

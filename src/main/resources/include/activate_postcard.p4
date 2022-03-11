@@ -17,9 +17,9 @@ control process_activate_postcard (
 
     table tb_postcard_telemetry{
         key = {
-            hdr.ipv4.src_addr: ternary;
-            hdr.ipv4.dst_addr: ternary;
-            local_metadata.l4_src_port: ternary;
+            local_metadata.l3_src_add : ternary;
+            local_metadata.l3_dst_add : ternary;
+            local_metadata.l4_src_port: ternary; 
             local_metadata.l4_dst_port: ternary;
         }
         actions = {

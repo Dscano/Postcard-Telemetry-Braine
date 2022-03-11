@@ -378,6 +378,10 @@ public class SimplePostcardManager implements IntService {
         boolean supportPostcard = postProg.supportsFunctionality(postProgrammable.IntFunctionality.POSTCARD);
         postProg.setupIntConfig(intConfig.get());
 
+        if(!hostService.getConnectedHosts(deviceId).isEmpty()){
+            postProg.initController(deviceId);
+        }
+
         // Apply intents.
         // This is a trivial implementation where we simply get the
         // corresponding INT objective from an intent and we apply to all

@@ -16,7 +16,12 @@
 package org.TelemetryBraine.app.postcard;
 
 import com.google.common.annotations.Beta;
+import org.onosproject.net.DeviceId;
 import org.onosproject.net.driver.HandlerBehaviour;
+import org.onosproject.net.flow.criteria.Criterion;
+import org.onosproject.net.pi.model.PiMatchFieldId;
+
+import java.util.Optional;
 
 /**
  * Abstraction of a device implementing In-band Network Telemetry (INT)
@@ -34,6 +39,8 @@ public interface postProgrammable extends HandlerBehaviour {
          */
         POSTCARD
     }
+
+    Optional<PiMatchFieldId> mapCriterionType(Criterion.Type type);
 
     /**
      * Adds a given IntObjective to the device.
@@ -58,6 +65,9 @@ public interface postProgrammable extends HandlerBehaviour {
      * @return true if the objective is successfully added; false otherwise.
      */
     boolean setupIntConfig(IntDeviceConfig config);
+
+
+    void initController(DeviceId deviceId);
 
     /**
      * Clean up any INT-related configuration from the device.

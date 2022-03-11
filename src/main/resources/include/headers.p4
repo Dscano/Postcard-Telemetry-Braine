@@ -62,6 +62,15 @@ header udp_t {
 }
 const bit<8> UDP_HEADER_LEN = 8;
 
+
+header vxlan_t {
+    bit<8>  flags;
+    bit<24> reserved;
+    bit<24> segmente_id;
+    bit<8>  reserv;
+}
+
+
 struct postcard_metadata_t {
     switch_id_t switch_id;
     flow_id_t flow_id;
@@ -86,12 +95,20 @@ struct headers_t {
     ipv4_t ipv4;
     tcp_t tcp;
     udp_t udp;
-
+    vxlan_t vxlan;
+    ethernet_t ethernet_inner;
+    ipv4_t ipv4_inner;
+    tcp_t tcp_inner;
+    udp_t udp_inner;
 }
 
 struct local_metadata_t {
     bit<16>       l4_src_port;
     bit<16>       l4_dst_port;
+    bit<32>       l3_src_add;
+    bit<32>       l3_dst_add;
+    bit<48>       l2_src_add;
+    bit<48>       l2_dst_add;
     next_hop_id_t next_hop_id;
     bit<16>       selector;
     postcard_metadata_t postcard_meta;
