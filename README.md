@@ -1,2 +1,4 @@
 # Postcard-Telemetry-Braine
 This project provides a p4 pipeline capable to forwarding packets and monitoring performances via Postcard Telemetry. The Onos application is capable to control the p4 switches, that have this pipeline,  and install the flow rules needed to provide the packets forwarding and monitoring via Postcard Telemetry. This application povides fine grain telemetry/forwarding for the services hosted by kubernetes pods. 
+
+More in details, this project was developed for providing postcard telemetry between kubernetes pods and VMs. The network topology is formed by the severs, where run the kubernetes master node, the VMs and pods, the connectivity between the pods, inside the severs, is provide by flannel. While the servers are connected to P4 switches controlled by ONOS, the SDN controller.
